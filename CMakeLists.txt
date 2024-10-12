@@ -12,11 +12,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set QML2_IMPORT_PATH to the path where the QML files are located
-set(QML2_IMPORT_PATH "/usr/lib/x86_64-linux-gnu/qt6/qml")
+# set(QML2_IMPORT_PATH "/usr/lib/x86_64-linux-gnu/qt6/qml")
 
 # Find required Qt6 packages
-# find_package(Qt6 COMPONENTS Core Quick Network REQUIRED)
-find_package(Qt6 COMPONENTS Core Quick Network Gui Qml QuickControls2 REQUIRED)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Quick QuickControls2 Network)
+
+qt_standard_project_setup(REQUIRES 6.5)
 
 # Add executable target for the application
 qt_add_executable(apptq_frontend
@@ -40,9 +41,12 @@ qt_add_resources(apptq_frontend "resources"
     FILES main.qml
 )
 
+# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
+# If you are developing for iOS or macOS you should consider setting an
+# explicit, fixed bundle identifier manually though.
 # Set target properties for macOS and Windows
 set_target_properties(apptq_frontend PROPERTIES
-    # MACOSX_BUNDLE_GUI_IDENTIFIER com.example.apptq_frontend # Uncomment and set this for iOS/macOS
+    # MACOSX_BUNDLE_GUI_IDENTIFIER com.example.apptq_frontend
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
@@ -51,7 +55,7 @@ set_target_properties(apptq_frontend PROPERTIES
 
 # Link target with required Qt6 libraries
 target_link_libraries(apptq_frontend
-    PRIVATE Qt6::Quick Qt6::Network Qt6::Core Qt6::Gui Qt6::Qml Qt6::QuickControls2
+    PRIVATE Qt6::Core Qt6::Quick Qt::QuickControls2 Qt6::Network
 )
 
 # Include GNUInstallDirs module for standard installation directories

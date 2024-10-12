@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     CppInterface cppInterface;
     engine.rootContext()->setContextProperty("cppInterface", &cppInterface);
 
-    engine.load(QUrl(QStringLiteral("qrc:/tq_frontend/main.qml")));
+    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     if (engine.rootObjects().isEmpty())
         return -1;
 
