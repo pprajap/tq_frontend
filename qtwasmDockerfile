@@ -1,6 +1,9 @@
 # Use a custom Qt6 WASM image as the base image
 FROM stateoftheartio/qt6:6.6-wasm-aqt
 
+# Switch to the root user
+USER root
+
 # Set the working directory inside the container
 WORKDIR /home/user/project
 

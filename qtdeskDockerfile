@@ -83,6 +83,9 @@ WORKDIR /home/user/project
 # copy the project files into the container
 COPY . /home/user/project
 
+# Switch to the root user
+USER root
+
 # Create the build directory, configure the project with CMake, and build it
 RUN rm -rf build && mkdir build && cd build && cmake .. && make
 
