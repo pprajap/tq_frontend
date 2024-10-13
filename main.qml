@@ -45,35 +45,27 @@ ApplicationWindow {
                         Label { text: "Function:" }
                         ComboBox {
                             id: dispFuncName
-                            model: ["Simple", "Tensor", "Alpine", "Rosenbrock", "Rastrigin", "Sphere", "Styblinski-Tang"]
+                            model: ["Simple", "Tensor", "Alpine"]
                             currentIndex: 0 // Default to "Simple"
                             onCurrentIndexChanged: {
                                 console.log("onCurrentIndexChanged: "+currentIndex);
-                                functionInfo.text = parent.getFunctionInfo(dispFuncName.currentText)
+                                functionInfo.text = parent.getFunctionInfo(currentIndex)
                             }
                         }
                         Label {
                             id: functionInfo
-                            text: parent.getFunctionInfo(dispFuncName.currentText)
+                            text: parent.getFunctionInfo(dispFuncName.currentIndex)
                         }
-                        function getFunctionInfo(functionName) {
-                            switch (functionName) {
-                                case "Alpine":
+                        function getFunctionInfo(functionNameIndex) {
+                            switch (functionNameIndex) {
+                                case 0:// "Simple"
                                     return "f(x) = sum(abs(x * sin(x) + 0.1 * x)), x in [-10, 10]";
-                                case "Simple":
+                                case 1:// "Tensor"
                                     return "f(x) = sin(0.1 * x[0])**2 + 0.1 * sum(x[1:]**2), x in [-1, 1]";
-                                case "Tensor":
+                                case 2:// "Alpine"
                                     return "f(i) = (i[0] - 2)**2 + (i[1] - 3)**2 + sum(i[2:]**4), i in [0, 1, 2, 3]";
-                                case "Rosenbrock":
-                                    return "f(x) = sum(100 * (x[i+1] - x[i]**2)**2 + (1 - x[i])**2), x in [-2.048, 2.048]";
-                                case "Rastrigin":
-                                    return "f(x) = 10 * d + sum(x[i]**2 - 10 * cos(2 * pi * x[i])), x in [-5.12, 5.12]";
-                                case "Sphere":
-                                    return "f(x) = sum(x**2), x in [-5.12, 5.12]";
-                                case "Styblinski-Tang":
-                                    return "f(x) = 0.5 * sum(x**4 - 16 * x**2 + 5 * x), x in [-5, 5]";
-                                default:
-                                    return "No information available.";
+                                default:// "Simple"
+                                    return "f(x) = sum(abs(x * sin(x) + 0.1 * x)), x in [-10, 10]";
                             }
                         }
                     }
@@ -205,18 +197,7 @@ ApplicationWindow {
                             text: "Run Optimization"
                             onClicked: {
                                 console.log("Button clicked: Run Optimization");
-                                console.log("Dimensions:", dimensionsInput.value);
-                                console.log("Lower Bound:", lowerBoundInput.value);
-                                console.log("Upper Bound:", upperBoundInput.value);
-                                console.log("Grid Size Factor P:", gridSizeFactorInputP.value);
-                                console.log("Grid Size Factor Q:", gridSizeFactorInputQ.value);
-                                console.log("Evaluations:", evalsInput.value);
-                                console.log("Function Name:", dispFuncName.currentText);
-                                console.log("Is Function:", isFuncCheck.checked);
-                                console.log("Is Vector:", isVectCheck.checked);
-                                console.log("With Cache:", withCacheCheck.checked);
-                                console.log("With Log:", withLogCheck.checked);
-                                console.log("With Optimization:", withOptCheck.checked);
+                                solverStatus.text = "Processing..."
                                 // Send data to the C++ backend for processing
                                 cppInterface.runOptimization(
                                     dimensionsInput.value,
@@ -243,9 +224,9 @@ ApplicationWindow {
                     spacing: 10
 
                     Row {
-                        // Solver Output
+                        // Solver Status
                         spacing: 10
-                        Label { text: "Solver Output: " }
+                        Label { text: "Solver Status: " }
                         TextArea {
                             id: solverStatus
                             readOnly: true
@@ -304,9 +285,16 @@ ApplicationWindow {
 
                     Row {
                         spacing: 10
+                        // Recalculate Button
+                        Button {
+                            text: "Recalculate"
+                            // onClicked: {
+                            //     cppInterface.downloadSolution()
+                            // }
+                        }
                         // Download Button
                         Button {
-                            text: "Download Solution "
+                            text: "Download"
                             // onClicked: {
                             //     cppInterface.downloadSolution()
                             // }

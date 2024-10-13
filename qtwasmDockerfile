@@ -5,7 +5,7 @@ FROM stateoftheartio/qt6:6.6-wasm-aqt
 WORKDIR /home/user/project
 
 # Copy the project files from the host to the working directory in the container
-COPY ../ /home/user/project
+COPY . /home/user/project
 
 # Create the build directory, configure the project with CMake, and build it using Ninja
 RUN rm -rf build && mkdir build && cd build && qt-cmake .. -G Ninja -B . && cmake --build .
@@ -17,7 +17,7 @@ EXPOSE 3000
 CMD ["sh", "-c", "cd build && python3 -m http.server 3000"]
 
 # Instructions to build the Docker image
-# docker build -t tq_frontend .
+# docker build -f qtwasmDockerfile -t tq_frontend .
 
 # Instructions to run the Docker container
 # docker run -it --rm -p 3000:3000 tq_frontend_web

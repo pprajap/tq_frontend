@@ -6,6 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Update and install necessary packages
 RUN apt-get update && apt-get install -y \
+    sudo \
     build-essential \
     cmake \
     git \
@@ -66,20 +67,29 @@ ENV LD_LIBRARY_PATH=$QT_BASE_DIR/lib
 ENV QML2_IMPORT_PATH=$QT_BASE_DIR/qml
 ENV QT_PLUGIN_PATH=$QT_BASE_DIR/plugins
 
-# Set the working directory
-WORKDIR /app
+# Add group & user + sudo
+RUN groupadd -r user && \
+    useradd --create-home --gid user user && \
+    echo 'user ALL=NOPASSWD: ALL' > /etc/sudoers.d/user
 
-# Copy the current directory contents into the container at /app
-COPY ../ /app
+USER user
+WORKDIR /home/user
+ENV HOME /home/user
 
-RUN mkdir build && cd build && cmake .. && make
+# Set the working directory inside the container
+WORKDIR /home/user/project
+
+# Copy the project files from the host to the working directory in the container
+COPY . /home/user/project
+
+RUN rm -rf build && mkdir build && cd build && cmake .. && make
 
 #CMD ["/bin/bash"]
 CMD ["./build/apptq_frontend"]
 
 
 # build the docker image
-# docker build -t tq_frontend_desktop .
+# docker build -f qtdeskDockerfile -t tq_frontend_desktop .
 
 # run the container and mount the current directory to /app in the container
 # xhost +local:docker
