@@ -15,7 +15,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set(QML2_IMPORT_PATH "/usr/lib/x86_64-linux-gnu/qt6/qml")
 
 # Find required Qt6 packages
-find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Network Widgets)
 
 # qt_standard_project_setup(REQUIRES 6.5)
 
@@ -55,7 +55,7 @@ set_target_properties(apptq_frontend PROPERTIES
 
 # Link target with required Qt6 libraries
 target_link_libraries(apptq_frontend
-    PRIVATE Qt6::Core Qt6::Quick Qt::QuickControls2 Qt6::Network
+    PRIVATE Qt6::Core Qt6::Quick Qt::QuickControls2 Qt6::Network Qt6::Widgets
 )
 
 # Include GNUInstallDirs module for standard installation directories

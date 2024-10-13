@@ -1,12 +1,43 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Window 2.15
+import Qt.labs.platform
 
 ApplicationWindow {
+    id: mainWindow
     width: 1300
     height: 950
     visible: true
     title: "TERRA QUANTUM GUI"
+
+    property int dimensions: 0
+    property double lowerBound: 0.0
+    property double upperBound: 0.0
+    property double gridSizeFactorP: 0.0
+    property double gridSizeFactorQ: 0.0
+    property int evals: 0
+    property int funcIndex: 0
+    property bool isFuncChecked: false
+    property bool isVectChecked: false
+    property bool withCache: false
+    property bool withLog: false
+    property bool withOpt: false
+
+    FileDialog {
+        id: saveFileDialog
+        title: "Save downloaded_solution.txt"
+        acceptLabel: "Save"
+        rejectLabel: "Cancel"
+        nameFilters: ["Text Files (*.txt)", "All Files (*)"]
+        folder: StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
+        onAccepted: {
+            console.log("onAccepted: "+ file)
+            cppInterface.saveSolution(file)
+        }
+        onRejected: {
+            console.log("Save canceled")
+        }
+    }
 
     ScrollView {
         anchors.fill: parent
@@ -18,10 +49,10 @@ ApplicationWindow {
                 id: titleBar
                 width: parent.width-50
                 height: 30
-                anchors.horizontalCenter: parent.horizontalCenter
+                //anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.top
                 Label {
-                    anchors.fill: parent
+                    //anchors.fill: parent
                     text: "TTOptimizor"
                 }
             }
@@ -30,7 +61,7 @@ ApplicationWindow {
                 id: ioRow
                 width: parent.width-50
                 height: 500
-                anchors.horizontalCenter: parent.horizontalCenter
+                //anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: titleBar.bottom
                 anchors.topMargin: 10
                 spacing: 10
@@ -198,6 +229,15 @@ ApplicationWindow {
                             onClicked: {
                                 console.log("Button clicked: Run Optimization");
                                 solverStatus.text = "Processing..."
+                                logsTextArea.text = ""
+                                functionNameOutput.text = ""
+                                evalsOutput.text = ""
+                                tOutput.text =""                                
+                                exOutput.text = ""
+                                eyOutput.text = ""
+                                downloadStatusLabel.text = ""
+                                // Save the settings for future recalucation request
+                                saveSettings()
                                 // Send data to the C++ backend for processing
                                 cppInterface.runOptimization(
                                     dimensionsInput.value,
@@ -288,16 +328,57 @@ ApplicationWindow {
                         // Recalculate Button
                         Button {
                             text: "Recalculate"
-                            // onClicked: {
-                            //     cppInterface.downloadSolution()
-                            // }
+                            onClicked: {
+                                console.log("Button clicked: Run Optimization");
+                                solverStatus.text = "Processing..."
+                                logsTextArea.text = ""
+                                functionNameOutput.text = ""
+                                evalsOutput.text = ""
+                                tOutput.text =""
+                                exOutput.text = ""
+                                eyOutput.text = ""
+                                downloadStatusLabel.text = ""
+                                // load the settings for recalucation request
+                                dimensionsInput.value = mainWindow.dimensions
+                                lowerBoundInput.value = mainWindow.lowerBound
+                                upperBoundInput.value = mainWindow.upperBound
+                                gridSizeFactorInputP.value = mainWindow.gridSizeFactorP
+                                gridSizeFactorInputQ.value = mainWindow.gridSizeFactorQ
+                                evalsInput.value = mainWindow.evals
+                                dispFuncName.currentIndex = mainWindow.funcIndex
+                                isFuncCheck.checked = isFuncChecked
+                                isVectCheck.checked = isVectChecked
+                                withCacheCheck.checked = withCache
+                                withLogCheck.checked = true
+                                withOptCheck.checked = withOpt
+                                // Send data to the C++ backend for processing
+                                cppInterface.runOptimization(
+                                    dimensionsInput.value,
+                                    lowerBoundInput.value,
+                                    upperBoundInput.value,
+                                    gridSizeFactorInputP.value,
+                                    gridSizeFactorInputQ.value,
+                                    evalsInput.value,
+                                    dispFuncName.currentText,
+                                    isFuncCheck.checked,
+                                    isVectCheck.checked,
+                                    withCacheCheck.checked,
+                                    withLogCheck.checked,
+                                    withOptCheck.checked,
+                                    true
+                                )
+                            }
                         }
                         // Download Button
                         Button {
                             text: "Download"
-                            // onClicked: {
-                            //     cppInterface.downloadSolution()
-                            // }
+                            onClicked: {
+                                cppInterface.downloadSolution()
+                            }
+                        }
+                        Label { 
+                            id: downloadStatusLabel
+                            text: "" 
                         }
                     }
                 }
@@ -306,7 +387,7 @@ ApplicationWindow {
                     target: cppInterface
                     function onOptimizationDone(response) {
                         var result = JSON.parse(response);
-                        solverStatus.text = "SUCCESS"
+                        solverStatus.text = "Done"
 
                         // Extract the values from the minimum_value string
                         var values = result.minimum_value.split("|").map(function(item) {
@@ -328,6 +409,10 @@ ApplicationWindow {
                     function onOptimizationError(errorMessage) {
                         solverStatus.text = "Error: " + errorMessage
                     }
+                    function onDownloadCompleted(data) {
+                        downloadStatusLabel.text = "Download completed successfully"
+                        logsTextArea.text = data
+                    }
                 }
             }
 
@@ -337,14 +422,37 @@ ApplicationWindow {
                 height: 400
                 anchors.top: ioRow.bottom
                 anchors.topMargin: 10
-                anchors.horizontalCenter: parent.horizontalCenter
-                Rectangle{
-                    anchors.fill: parent
-                    color: "lightgrey"
+                ScrollView{
+                    width: functionOutputLog.width - 100
+                    height: 400
+                    TextArea {
+                        id: logsTextArea
+                        readOnly: true
+                    }
                 }
-
+                // Save Button
+                Button {
+                    text: "Save"
+                    onClicked: {
+                        saveFileDialog.open()
+                    }
+                }
             }
         }
+    }
 
+    function saveSettings() {
+        dimensions = dimensionsInput.value
+        lowerBound = lowerBoundInput.value
+        upperBound = upperBoundInput.value
+        gridSizeFactorP = gridSizeFactorInputP.value
+        gridSizeFactorQ = gridSizeFactorInputQ.value
+        evals = evalsInput.value
+        funcIndex = dispFuncName.currentIndex
+        isFuncChecked = isFuncCheck.checked
+        isVectChecked = isVectCheck.checked
+        withCache = withCacheCheck.checked
+        withLog = withLogCheck.checked
+        withOpt = withOptCheck.checked
     }
 }

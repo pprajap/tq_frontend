@@ -7,6 +7,8 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QEventLoop>
+#include <QFile>
+
 
 CppInterface::CppInterface(QObject *parent) : QObject(parent) {}
 
@@ -30,22 +32,23 @@ CppInterface::CppInterface(QObject *parent) : QObject(parent) {}
  * @param withLog A boolean indicating if logging should be enabled.
  * @param withOpt A boolean indicating if optimization should be performed.
  */
-void CppInterface::runOptimization(int dimensions, double lowerBound, double upperBound, int gridSizeFactorP, int gridSizeFactorQ, int evals, const QString &funcName, bool isFunc, bool isVect, bool withCache, bool withLog, bool withOpt)
+void CppInterface::runOptimization(int dimensions, double lowerBound, double upperBound, int gridSizeFactorP, int gridSizeFactorQ, int evals, const QString &funcName, bool isFunc, bool isVect, bool withCache, bool withLog, bool withOpt, bool forceRecal)
 {
     // Implement the optimization logic here
-    qDebug() << "Running optimization with parameters:";
-    qDebug() << "Function Name:" << funcName;
-    qDebug() << "Dimensions:" << dimensions;
-    qDebug() << "Lower Bound:" << lowerBound;
-    qDebug() << "Upper Bound:" << upperBound;
-    qDebug() << "Grid Size Factor P:" << gridSizeFactorP;
-    qDebug() << "Grid Size Factor Q:" << gridSizeFactorQ;
-    qDebug() << "Number of Evals:" << evals;
-    qDebug() << "is_func:" << isFunc;
-    qDebug() << "is_vect:" << isVect;
-    qDebug() << "with_cache:" << withCache;
-    qDebug() << "with_log:" << withLog;
-    qDebug() << "with_opt:" << withOpt;
+    qDebug() << "Running optimization with parameters:"
+             << "Function Name:" << funcName
+             << "Dimensions:" << dimensions
+             << "Lower Bound:" << lowerBound
+             << "Upper Bound:" << upperBound
+             << "Grid Size Factor P:" << gridSizeFactorP
+             << "Grid Size Factor Q:" << gridSizeFactorQ
+             << "Number of Evals:" << evals
+             << "is_func:" << isFunc
+             << "is_vect:" << isVect
+             << "with_cache:" << withCache
+             << "with_log:" << withLog
+             << "with_opt:" << withOpt
+             << "force_recalculate" << forceRecal;
 
     // Prepare the JSON payload
     QJsonObject json;
@@ -61,6 +64,7 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
     json["withCache"] = withCache;
     json["withLog"] = withLog;
     json["withOpt"] = withOpt;
+    json["forceRecal"] = forceRecal;
 
     QJsonDocument doc(json);
     QByteArray data = doc.toJson();
@@ -68,7 +72,7 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
     // Setup the network request
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
     QNetworkRequest request(QUrl("http://tq_backend:5000/optimize")); // For containerized deployment
-    // QNetworkRequest request(QUrl("http://localhost:5000/optimize")); // For local testing
+    //QNetworkRequest request(QUrl("http://localhost:5000/optimize")); // For local testing
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
     // Send the request
@@ -83,6 +87,52 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
         } else {
             qDebug() << "Error:" << reply->errorString();
             emit optimizationError(reply->errorString());
+        }
+        reply->deleteLater();
+    });
+}
+
+void CppInterface::downloadSolution()
+{
+    qDebug() << "Downloading solution...";
+    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+    QNetworkRequest request(QUrl("http://tq_backend:5000/download_solution")); // For containerized deployment
+    // QNetworkRequest request(QUrl("http://localhost:5000/download_solution")); // For local testing
+
+    QNetworkReply *reply = manager->get(request);
+    connect(reply, &QNetworkReply::finished, this, [reply, this]() {
+        if (reply->error() == QNetworkReply::NoError) {
+            QByteArray data = reply->readAll();
+            qDebug() << "Download completed";
+            emit downloadCompleted(data);
+        } else {
+            qDebug() << "Download failed:" << reply->errorString();
+        }
+        reply->deleteLater();
+    });
+}
+
+void CppInterface::saveSolution(const QString &filePath)
+{
+    qDebug() << "Downloading solution...";
+    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+    QNetworkRequest request(QUrl("http://tq_backend:5000/download_solution")); // For containerized deployment
+    //QNetworkRequest request(QUrl("http://localhost:5000/download_solution")); // For local testing
+
+    QNetworkReply *reply = manager->get(request);
+    connect(reply, &QNetworkReply::finished, this, [reply, this, filePath]() {
+        if (reply->error() == QNetworkReply::NoError) {
+            QByteArray data = reply->readAll();
+            QFile file(filePath);
+            if (file.open(QIODevice::WriteOnly)) {
+                file.write(data);
+                file.close();
+                qDebug() << "File saved at: " << filePath;              
+            } else {
+                qDebug() << "Failed to open file for writing";
+            }
+        } else {
+            qDebug() << "Save failed:" << reply->errorString();
         }
         reply->deleteLater();
     });

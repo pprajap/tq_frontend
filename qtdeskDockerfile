@@ -54,6 +54,7 @@ RUN apt-get update && apt-get install -y \
     qml6-module-qtquick-controls \
     qml6-module-qtquick-layouts \
     qml6-module-qtquick-templates \
+    qml6-module-qt-labs-platform \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
