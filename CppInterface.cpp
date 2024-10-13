@@ -66,32 +66,24 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
     QByteArray data = doc.toJson();
 
     // Setup the network request
-    QNetworkAccessManager manager;
-    QNetworkRequest request(QUrl("http://tq_backend:5000/optimize"));
+    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+    QNetworkRequest request(QUrl("http://tq_backend:5000/optimize")); // For containerized deployment
+    // QNetworkRequest request(QUrl("http://localhost:5000/optimize")); // For local testing
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
     // Send the request
-    QNetworkReply *reply = manager.post(request, data);
+    QNetworkReply *reply = manager->post(request, data);
 
-    // Wait for the request to finish
-    QEventLoop loop;
-    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-    loop.exec();
-
-    // Handle the reply
-    if (reply->error() == QNetworkReply::NoError)
-    {
-        QByteArray response = reply->readAll();
-        qDebug() << "Response:" << response;
-        // Emit a signal to notify the QML side that the optimization is done
-        emit optimizationDone(response);
-    }
-    else
-    {
-        qDebug() << "Error:" << reply->errorString();
-        // Emit a signal to notify the QML side that an error occurred
-        emit optimizationError(reply->errorString());
-    }
-
-    reply->deleteLater();
+    // Handle the reply asynchronously
+    connect(reply, &QNetworkReply::finished, this, [reply, this]() {
+        if (reply->error() == QNetworkReply::NoError) {
+            QByteArray response = reply->readAll();
+            qDebug() << "Response received:" << response;
+            emit optimizationDone(response);
+        } else {
+            qDebug() << "Error:" << reply->errorString();
+            emit optimizationError(reply->errorString());
+        }
+        reply->deleteLater();
+    });
 }

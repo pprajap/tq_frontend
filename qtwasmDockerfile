@@ -1,0 +1,23 @@
+# Use a custom Qt6 WASM image as the base image
+FROM stateoftheartio/qt6:6.6-wasm-aqt
+
+# Set the working directory inside the container
+WORKDIR /home/user/project
+
+# Copy the project files from the host to the working directory in the container
+COPY ../ /home/user/project
+
+# Create the build directory, configure the project with CMake, and build it using Ninja
+RUN rm -rf build && mkdir build && cd build && qt-cmake .. -G Ninja -B . && cmake --build .
+
+# Expose port 3000 to allow external access
+EXPOSE 3000
+
+# Command to run a simple HTTP server on port 3000 in the build directory
+CMD ["sh", "-c", "cd build && python3 -m http.server 3000"]
+
+# Instructions to build the Docker image
+# docker build -t tq_frontend .
+
+# Instructions to run the Docker container
+# docker run -it --rm -p 3000:3000 tq_frontend_web
