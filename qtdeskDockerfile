@@ -75,7 +75,7 @@ RUN groupadd -r user && \
 
 USER user
 WORKDIR /home/user
-ENV HOME /home/user
+ENV HOME=/home/user
 
 # Set the working directory inside the container
 WORKDIR /home/user/project
