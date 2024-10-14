@@ -33,8 +33,8 @@ EXPOSE 3000
 CMD ["sh", "-c", "python3 /emsdk/upstream/emscripten/emrun.py --no_browser --port 3000 ."]
 
 # Instructions to build the Docker image
-# docker build -f qtwasm_multistage_Dockerfile -t tq_frontend_web_light .
+# docker build -f qtwasm_multistage_Dockerfile -t tq-frontend-web-light .
 
 # Instructions to run the Docker container
-# docker run -it --rm -p 3000:3000 tq_frontend_web_light
+# docker run -it --rm -p 3000:3000 tq-frontend-web-light
 # Comment: "Frontend service is running. Visit http://localhost:3000/apptq_frontend.html"

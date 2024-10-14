@@ -82,7 +82,7 @@ CMD ["./build/apptq_frontend"]
 
 
 # build the docker image
-# docker build -f qtdeskDockerfile -t tq_frontend_desktop .
+# docker build -f qtdeskDockerfile -t tq-frontend-desktop .
 
 # run the container and mount the current directory to /app in the container
 # xhost +local:docker
@@ -91,4 +91,4 @@ CMD ["./build/apptq_frontend"]
 # -v /tmp/.X11-unix:/tmp/.X11-unix \
 # --device /dev/dri \
 # -v $(pwd):/app \
-# tq_frontend_desktop
+# tq-frontend-desktop
