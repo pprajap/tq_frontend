@@ -1,16 +1,19 @@
-# Stage 1: Build the Qt WASM files
+## Stage 1: Build the Qt WASM files
 FROM stateoftheartio/qt6:6.6-wasm-aqt as builder
 
+# Set user as root for all ops
+USER root
+
 # Set the working directory inside the container
-WORKDIR /home/user/project
+WORKDIR /app
 
 # Copy the project files into the container
-COPY . /home/user/project
+COPY . /app
 
 # Create the build directory, configure the project with CMake, and build it using Ninja
 RUN mkdir build && cd build && qt-cmake .. -G Ninja -B . && cmake --build .
 
-# Stage 2: Serve the built files
+## Stage 2: Serve the built files
 FROM python:3.9-slim
 
 # Set the working directory inside the container
@@ -20,7 +23,7 @@ WORKDIR /app
 COPY --from=builder /opt/emsdk /emsdk
 
 # Copy the built files from the builder stage
-COPY --from=builder /home/user/project/build /app
+COPY --from=builder /app/build /app
 
 # Expose port 3000 to allow external access
 EXPOSE 3000
