@@ -1,44 +1,47 @@
 # tq_frontend Project
 
-## Overview
-tq_frontend is a Qt-based graphical user interface project. This project leverages Qt 6.8.0 and CMake for building and managing dependencies.
+# Build the Docker Image for Desktop
 
-## Directory Structure
-- `tq_frontend/`: Root directory of the project.
-- `tq_frontend/build/`: Contains build files
+```sh
+docker build -f qtdeskDockerfile -t tq_frontend_desktop .
+```
 
-## Build Instructions
-To build the project, follow these steps:
+# Run the Container and Mount the Current Directory to /app in the Container
 
-1. **Navigate to the project directory:**
-    ```sh
-    cd /path/to/your/project/TQ_GUI
-    ```
+```sh
+xhost +local:docker
+docker run -it --rm \
+    -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    --device /dev/dri \
+    -v $(pwd):/app \
+    tq_frontend_desktop
+```
 
-2. **Configure the project using CMake:**
-    ```sh
-    cmake -B build -S .
-    ```
+# Build the Docker Image for Web
 
-3. **Build the project using Ninja:**
-    ```sh
-    cmake --build build
-    ```
+```sh
+docker build -f qtwasmDockerfile -t tq_frontend_web .
+```
 
-## Key Build Targets
-- `appTQ_GUI`: Main target for the application.
+# Run the Docker Container for Web
+
+```sh
+docker run -it --rm -p 3000:3000 tq_frontend_web
+```
 
 
-## Dependencies
-- **Qt 6.8.0:** Ensure Qt 6.8.0 is installed and properly configured.
-- **CMake:** Version 3.29.3 or higher is required.
-- **Ninja:** Build system used for compiling the project.
+# Build the Docker Image for Web (Light Version without Qt WebAssembly Packages)
 
-## Additional Information
-For more details...
+```sh
+docker build -f qtwasm_multistage_Dockerfile -t tq_frontend_web_light .
+```
 
-## License
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
+# Run the Docker Container for Web (Light Version without Qt WebAssembly Packages)
 
-## Contact
-For any queries or contributions, please contact the project maintainer at pprajapa.
+```sh
+docker run -it --rm -p 3000:3000 tq_frontend_web_light
+```
+
+**Comment:** Frontend service is running. Visit [http://localhost:3000/apptq_frontend.html](http://localhost:3000/apptq_frontend.html). Replace localhost with appropriate EXTERNAL_IP in case the frontend is deployed on cloud.
+

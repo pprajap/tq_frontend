@@ -68,23 +68,11 @@ ENV LD_LIBRARY_PATH=$QT_BASE_DIR/lib
 ENV QML2_IMPORT_PATH=$QT_BASE_DIR/qml
 ENV QT_PLUGIN_PATH=$QT_BASE_DIR/plugins
 
-# Add group & user + sudo
-RUN groupadd -r user && \
-    useradd --create-home --gid user user && \
-    echo 'user ALL=NOPASSWD: ALL' > /etc/sudoers.d/user
-
-USER user
-WORKDIR /home/user
-ENV HOME=/home/user
-
 # Set the working directory inside the container
-WORKDIR /home/user/project
+WORKDIR /app
 
-# copy the project files into the container
-COPY . /home/user/project
-
-# Switch to the root user
-USER root
+# Copy the project files into the container
+COPY . /app
 
 # Create the build directory, configure the project with CMake, and build it
 RUN rm -rf build && mkdir build && cd build && cmake .. && make

@@ -1,0 +1,37 @@
+# Stage 1: Build the Qt WASM files
+FROM stateoftheartio/qt6:6.6-wasm-aqt as builder
+
+# Set the working directory inside the container
+WORKDIR /home/user/project
+
+# Copy the project files into the container
+COPY . /home/user/project
+
+# Create the build directory, configure the project with CMake, and build it using Ninja
+RUN mkdir build && cd build && qt-cmake .. -G Ninja -B . && cmake --build .
+
+# Stage 2: Serve the built files
+FROM python:3.9-slim
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the emsdk files from the builder stage
+COPY --from=builder /opt/emsdk /emsdk
+
+# Copy the built files from the builder stage
+COPY --from=builder /home/user/project/build /app
+
+# Expose port 3000 to allow external access
+EXPOSE 3000
+
+# Command to run a simple HTTP server on port 3000
+# CMD ["python3", "-m", "http.server", "3000"]
+CMD ["sh", "-c", "python3 /emsdk/upstream/emscripten/emrun.py --no_browser --port 3000 ."]
+
+# Instructions to build the Docker image
+# docker build -f qtwasm_multistage_Dockerfile -t tq_frontend_web_light .
+
+# Instructions to run the Docker container
+# docker run -it --rm -p 3000:3000 tq_frontend_web_light
+# Comment: "Frontend service is running. Visit http://localhost:3000/apptq_frontend.html"

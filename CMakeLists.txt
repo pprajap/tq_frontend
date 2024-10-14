@@ -11,13 +11,11 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Set QML2_IMPORT_PATH to the path where the QML files are located
-# set(QML2_IMPORT_PATH "/usr/lib/x86_64-linux-gnu/qt6/qml")
-
 # Find required Qt6 packages
 find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Network Widgets)
 
-# qt_standard_project_setup(REQUIRES 6.5)
+# add macro definitions(-DDOCKER_COMPOSE)
+add_definitions(-DDOCKER_COMPOSE)
 
 # Add executable target for the application
 qt_add_executable(apptq_frontend

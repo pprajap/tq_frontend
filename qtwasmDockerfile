@@ -11,7 +11,7 @@ WORKDIR /home/user/project
 COPY . /home/user/project
 
 # Create the build directory, configure the project with CMake, and build it using Ninja
-RUN rm -rf build && mkdir build && cd build && qt-cmake .. -G Ninja -B . && cmake --build .
+RUN mkdir build && cd build && qt-cmake .. -G Ninja -B . && cmake --build .
 
 # Expose port 3000 to allow external access
 EXPOSE 3000
@@ -24,3 +24,4 @@ CMD ["sh", "-c", "cd build && python3 /opt/emsdk/upstream/emscripten/emrun.py --
 
 # Instructions to run the Docker container
 # docker run -it --rm -p 3000:3000 tq_frontend_web
+# Comment: "Frontend service is running. Visit http://localhost:3000/apptq_frontend.html"

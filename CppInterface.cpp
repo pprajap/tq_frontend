@@ -71,8 +71,14 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
 
     // Setup the network request
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+    
+#ifdef DOCKER_COMPOSE
+    qDebug() << "Sending request at http://tq_backend:5000/optimize";
     QNetworkRequest request(QUrl("http://tq_backend:5000/optimize")); // For containerized deployment
-    //QNetworkRequest request(QUrl("http://localhost:5000/optimize")); // For local testing
+#else
+    qDebug() << "Sending request at http://localhost:5000/optimize";
+    QNetworkRequest request(QUrl("http://localhost:5000/optimize")); // For local testing
+#endif
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
     // Send the request
@@ -96,8 +102,14 @@ void CppInterface::downloadSolution()
 {
     qDebug() << "Downloading solution...";
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+
+#ifdef DOCKER_COMPOSE
+    qDebug() << "Sending request at http://tq_backend:5000/download_solution";
     QNetworkRequest request(QUrl("http://tq_backend:5000/download_solution")); // For containerized deployment
-    // QNetworkRequest request(QUrl("http://localhost:5000/download_solution")); // For local testing
+#else
+    qDebug() << "Sending request at http://localhost:5000/download_solution";
+    QNetworkRequest request(QUrl("http://localhost:5000/download_solution")); // For local testing
+#endif
 
     QNetworkReply *reply = manager->get(request);
     connect(reply, &QNetworkReply::finished, this, [reply, this]() {
@@ -114,10 +126,16 @@ void CppInterface::downloadSolution()
 
 void CppInterface::saveSolution(const QString &filePath)
 {
-    qDebug() << "Downloading solution...";
+    qDebug() << "saving solution...";
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
+
+#ifdef DOCKER_COMPOSE
+    qDebug() << "Sending request at http://tq_backend:5000/download_solution";
     QNetworkRequest request(QUrl("http://tq_backend:5000/download_solution")); // For containerized deployment
-    //QNetworkRequest request(QUrl("http://localhost:5000/download_solution")); // For local testing
+#else
+    qDebug() << "Sending request at http://localhost:5000/download_solution";
+    QNetworkRequest request(QUrl("http://localhost:5000/download_solution")); // For local testing
+#endif
 
     QNetworkReply *reply = manager->get(request);
     connect(reply, &QNetworkReply::finished, this, [reply, this, filePath]() {
