@@ -6,24 +6,18 @@ set -e
 # Treat unset variables as an error
 set -u
 
-# echo "Starting cleanup..."
-# # call ./cleanup.sh to remove all images and containers
-# ./cleanup.sh
-# echo "Cleanup completed."
-
 echo "Building tq-frontend-web-light image..."
-# build tq-frontend-web-light image
-docker build -f qtwasm_multistage_Dockerfile -t tq-frontend-web-light .
+./build_frontend_web_light_docker_image.sh
 echo "Image build completed."
 
 # Docker login
-if [ -z "${DOCKER_USERNAME:-}" ] || [ -z "${DOCKER_PASSWORD:-}" ]; then
-  echo "DOCKER_USERNAME and DOCKER_PASSWORD must be set"
-  exit 1
-fi
-echo "Logging into Docker..."
-echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin
+docker login
 echo "Docker login successful."
+
+# fetch user name from docker login
+export DOCKER_USERNAME=$(docker info
+  | grep Username
+  | awk '{print $2}')
 
 echo "Tagging and pushing the image to Docker Hub..."
 # push above to docker hub
