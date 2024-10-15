@@ -14,13 +14,44 @@ COPY . /app
 RUN mkdir build && cd build && qt-cmake .. -G Ninja -B . && cmake --build .
 
 ## Stage 2: Serve the built files
+# Use the official Python base image
 FROM python:3.9-slim
+
+# Set environment variables
+ENV EMSDK_VERSION=3.1.37
+ENV EMSDK_PATH=/opt/emsdk
+ENV PATH="${EMSDK_PATH}/upstream/emscripten:${EMSDK_PATH}/upstream/bin:${EMSDK_PATH}/node/bin:${EMSDK_PATH}/python/3.9.2_64bit/bin:$PATH"
+
+# Install dependencies required for emsdk
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    build-essential \
+    cmake \
+    && rm -rf /var/lib/apt/lists/*
+
+# Clone the Emscripten SDK repo
+RUN git clone https://github.com/emscripten-core/emsdk.git $EMSDK_PATH
+
+# Install and activate the specified version of the Emscripten SDK
+RUN cd $EMSDK_PATH \
+    && git fetch \
+    && ./emsdk install ${EMSDK_VERSION} \
+    && ./emsdk activate ${EMSDK_VERSION}
+    # && ./emsdk install node-14.15.5-64bit \
+    # && ./emsdk install python-3.9.2-64bit
+
+# Set up the environment variables permanently in the shell
+RUN echo "source ${EMSDK_PATH}/emsdk_env.sh" >> ~/.bashrc
+
+# Activate EMSDK for the current session
+RUN /bin/bash -c "source ${EMSDK_PATH}/emsdk_env.sh"
 
 # Set the working directory inside the container
 WORKDIR /app
 
 # Copy the emsdk files from the builder stage
-COPY --from=builder /opt/emsdk /emsdk
+## COPY --from=builder /opt/emsdk /emsdk
 
 # Copy the built files from the builder stage
 COPY --from=builder /app/build /app
@@ -30,7 +61,7 @@ EXPOSE 3000
 
 # Command to run a simple HTTP server on port 3000
 # CMD ["python3", "-m", "http.server", "3000"]
-CMD ["sh", "-c", "python3 /emsdk/upstream/emscripten/emrun.py --no_browser --port 3000 ."]
+CMD ["sh", "-c", "python3 /opt/emsdk/upstream/emscripten/emrun.py --no_browser --port 3000 ."]
 
 # Instructions to build the Docker image
 # docker build -f qtwasm_multistage_Dockerfile -t tq-frontend-web-light .
