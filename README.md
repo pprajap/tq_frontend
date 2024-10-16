@@ -34,7 +34,7 @@ docker run -it --rm -p 3000:3000 tq-frontend-web
 # Build the Docker Image for Web (Light Version without Qt WebAssembly Packages)
 
 ```sh
-docker build -f qtwasm_multistage_Dockerfile -t tq-frontend-web-light .
+docker build -f qtwebDockerfile -t tq-frontend-web-light .
 ```
 
 # Run the Docker Container for Web (Light Version without Qt WebAssembly Packages)
