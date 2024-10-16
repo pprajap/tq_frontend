@@ -8,6 +8,7 @@
 #include <QJsonDocument>
 #include <QFile>
 
+#define REVERSE_PROXY_IP "34.32.40.192" // External IP of the reverse proxy
 
 CppInterface::CppInterface(QObject *parent) : QObject(parent) {}
 
@@ -48,8 +49,8 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
     QByteArray data = doc.toJson();
 
 #ifdef CLOUD_DEPLOYMENT
-    qDebug() << "Sending request at http://<external-ip-or-domain-of-reverse-proxy>/optimize";
-    QNetworkRequest request(QUrl("http://<external-ip-or-domain-of-reverse-proxy>/optimize")); // For cloud deployment
+    qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/optimize";
+    QNetworkRequest request(QUrl("http://" REVERSE_PROXY_IP "/optimize")); // For cloud deployment
 #elif defined(CONTAINERIZED_DEPLOYMENT)
     qDebug() << "Sending request at http://localhost/optimize";
     QNetworkRequest request(QUrl("http://localhost/optimize")); // For containerized deployment
