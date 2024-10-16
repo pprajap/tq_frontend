@@ -81,8 +81,8 @@ void CppInterface::downloadSolution()
     qDebug() << "Downloading solution...";
 
 #ifdef CLOUD_DEPLOYMENT
-    qDebug() << "Sending request at http://<external-ip-or-domain-of-reverse-proxy>/download_solution";
-    QNetworkRequest request(QUrl("http://<external-ip-or-domain-of-reverse-proxy>/download_solution")); // For cloud deployment
+    qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/download_solution";
+    QNetworkRequest request(QUrl("http://" REVERSE_PROXY_IP "/download_solution")); // For cloud deployment
 #elif defined(CONTAINERIZED_DEPLOYMENT)
     qDebug() << "Sending request at http://localhost/download_solution";
     QNetworkRequest request(QUrl("http://localhost/download_solution")); // For containerized deployment
@@ -111,8 +111,8 @@ void CppInterface::saveSolution(const QString &filePath)
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
 
 #ifdef CLOUD_DEPLOYMENT
-    qDebug() << "Sending request at http://<external-ip-or-domain-of-reverse-proxy>/download_solution";
-    QNetworkRequest request(QUrl("http://<external-ip-or-domain-of-reverse-proxy>/download_solution")); // For cloud deployment
+    qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/download_solution";
+    QNetworkRequest request(QUrl("http://" REVERSE_PROXY_IP "/download_solution")); // For cloud deployment
 #elif defined(CONTAINERIZED_DEPLOYMENT)
     qDebug() << "Sending request at http://localhost/download_solution";
     QNetworkRequest request(QUrl("http://localhost/download_solution")); // For containerized deployment
