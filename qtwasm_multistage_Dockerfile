@@ -10,6 +10,9 @@ WORKDIR /app
 # Copy the project files into the container
 COPY . /app
 
+# Set the deployment type as an environment variable
+ENV CLOUD_DEPLOYMENT=${CLOUD_DEPLOYMENT}
+
 # Create the build directory, configure the project with CMake, and build it using Ninja
 RUN mkdir build && cd build && qt-cmake .. -G Ninja -B . && cmake --build .
 

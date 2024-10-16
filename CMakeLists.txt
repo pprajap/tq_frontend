@@ -14,8 +14,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Find required Qt6 packages
 find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Network Widgets)
 
-# add macro definitions(-DDOCKER_COMPOSE)
-add_definitions(-DDOCKER_COMPOSE)
+# Define flags based on the deployment type
+if(DEFINED ENV{CLOUD_DEPLOYMENT} AND $ENV{CLOUD_DEPLOYMENT} STREQUAL "1")
+    target_compile_definitions(apptq_frontend PRIVATE CLOUD_DEPLOYMENT)
+elseif(DEFINED ENV{CONTAINERIZED_DEPLOYMENT} AND $ENV{CONTAINERIZED_DEPLOYMENT} STREQUAL "1")
+    target_compile_definitions(apptq_frontend PRIVATE CONTAINERIZED_DEPLOYMENT)
+endif
 
 # Add executable target for the application
 qt_add_executable(apptq_frontend
