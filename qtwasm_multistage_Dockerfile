@@ -38,8 +38,6 @@ RUN cd $EMSDK_PATH \
     && git fetch \
     && ./emsdk install ${EMSDK_VERSION} \
     && ./emsdk activate ${EMSDK_VERSION}
-    # && ./emsdk install node-14.15.5-64bit \
-    # && ./emsdk install python-3.9.2-64bit
 
 # Set up the environment variables permanently in the shell
 RUN echo "source ${EMSDK_PATH}/emsdk_env.sh" >> ~/.bashrc

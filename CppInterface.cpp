@@ -6,35 +6,13 @@
 #include <QNetworkRequest>
 #include <QJsonObject>
 #include <QJsonDocument>
-#include <QEventLoop>
 #include <QFile>
 
 
 CppInterface::CppInterface(QObject *parent) : QObject(parent) {}
 
-/**
- * @brief Runs the optimization process with the given parameters.
- *
- * This function sends a POST request to the optimization server with the provided parameters
- * and handles the response. It emits signals to notify the QML side about the completion or
- * error of the optimization process.
- *
- * @param dimensions The number of dimensions for the optimization.
- * @param lowerBound The lower bound for the optimization.
- * @param upperBound The upper bound for the optimization.
- * @param gridSizeFactorP The grid size factor P.
- * @param gridSizeFactorQ The grid size factor Q.
- * @param evals The number of evaluations to perform.
- * @param funcName The name of the function to optimize.
- * @param isFunc A boolean indicating if the function is a single function.
- * @param isVect A boolean indicating if the function is a vector function.
- * @param withCache A boolean indicating if caching should be used.
- * @param withLog A boolean indicating if logging should be enabled.
- * @param withOpt A boolean indicating if optimization should be performed.
- */
 void CppInterface::runOptimization(int dimensions, double lowerBound, double upperBound, int gridSizeFactorP, int gridSizeFactorQ, int evals, const QString &funcName, bool isFunc, bool isVect, bool withCache, bool withLog, bool withOpt, bool forceRecal)
 {
-    // Implement the optimization logic here
     qDebug() << "Running optimization with parameters:"
              << "Function Name:" << funcName
              << "Dimensions:" << dimensions
@@ -69,22 +47,21 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
     QJsonDocument doc(json);
     QByteArray data = doc.toJson();
 
-    // Setup the network request
-    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
-    
-#ifdef DOCKER_COMPOSE
-    qDebug() << "Sending request at http://tq-backend:5000/optimize";
-    QNetworkRequest request(QUrl("http://tq-backend:5000/optimize")); // For containerized deployment
+#ifdef CLOUD_DEPLOYMENT
+    qDebug() << "Sending request at http://<external-ip-or-domain-of-reverse-proxy>/optimize";
+    QNetworkRequest request(QUrl("http://<external-ip-or-domain-of-reverse-proxy>/optimize")); // For cloud deployment
+#elif defined(CONTAINERIZED_DEPLOYMENT)
+    qDebug() << "Sending request at http://localhost/optimize";
+    QNetworkRequest request(QUrl("http://localhost/optimize")); // For containerized deployment
 #else
     qDebug() << "Sending request at http://localhost:5000/optimize";
     QNetworkRequest request(QUrl("http://localhost:5000/optimize")); // For local testing
 #endif
+
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-    // Send the request
+    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
     QNetworkReply *reply = manager->post(request, data);
-
-    // Handle the reply asynchronously
     connect(reply, &QNetworkReply::finished, this, [reply, this]() {
         if (reply->error() == QNetworkReply::NoError) {
             QByteArray response = reply->readAll();
@@ -101,16 +78,19 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
 void CppInterface::downloadSolution()
 {
     qDebug() << "Downloading solution...";
-    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
 
-#ifdef DOCKER_COMPOSE
-    qDebug() << "Sending request at http://tq-backend:5000/download_solution";
-    QNetworkRequest request(QUrl("http://tq-backend:5000/download_solution")); // For containerized deployment
+#ifdef CLOUD_DEPLOYMENT
+    qDebug() << "Sending request at http://<external-ip-or-domain-of-reverse-proxy>/download_solution";
+    QNetworkRequest request(QUrl("http://<external-ip-or-domain-of-reverse-proxy>/download_solution")); // For cloud deployment
+#elif defined(CONTAINERIZED_DEPLOYMENT)
+    qDebug() << "Sending request at http://localhost/download_solution";
+    QNetworkRequest request(QUrl("http://localhost/download_solution")); // For containerized deployment
 #else
     qDebug() << "Sending request at http://localhost:5000/download_solution";
     QNetworkRequest request(QUrl("http://localhost:5000/download_solution")); // For local testing
 #endif
 
+    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
     QNetworkReply *reply = manager->get(request);
     connect(reply, &QNetworkReply::finished, this, [reply, this]() {
         if (reply->error() == QNetworkReply::NoError) {
@@ -129,9 +109,12 @@ void CppInterface::saveSolution(const QString &filePath)
     qDebug() << "saving solution...";
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
 
-#ifdef DOCKER_COMPOSE
-    qDebug() << "Sending request at http://tq-backend:5000/download_solution";
-    QNetworkRequest request(QUrl("http://tq-backend:5000/download_solution")); // For containerized deployment
+#ifdef CLOUD_DEPLOYMENT
+    qDebug() << "Sending request at http://<external-ip-or-domain-of-reverse-proxy>/download_solution";
+    QNetworkRequest request(QUrl("http://<external-ip-or-domain-of-reverse-proxy>/download_solution")); // For cloud deployment
+#elif defined(CONTAINERIZED_DEPLOYMENT)
+    qDebug() << "Sending request at http://localhost/download_solution";
+    QNetworkRequest request(QUrl("http://localhost/download_solution")); // For containerized deployment
 #else
     qDebug() << "Sending request at http://localhost:5000/download_solution";
     QNetworkRequest request(QUrl("http://localhost:5000/download_solution")); // For local testing
