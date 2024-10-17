@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y \
     software-properties-common \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-    
+
 RUN apt-get update && apt-get install -y \
     libxcb-xinerama0 \
     libxcb-xinput0 \
@@ -79,16 +79,3 @@ RUN rm -rf build && mkdir build && cd build && cmake .. && make
 
 #CMD ["/bin/bash"]
 CMD ["./build/apptq_frontend"]
-
-
-# build the docker image
-# docker build -f qtdeskDockerfile -t tq-frontend-desktop .
-
-# run the container and mount the current directory to /app in the container
-# xhost +local:docker
-# docker run -it --rm \
-# -e DISPLAY=$DISPLAY \
-# -v /tmp/.X11-unix:/tmp/.X11-unix \
-# --device /dev/dri \
-# -v $(pwd):/app \
-# tq-frontend-desktop
