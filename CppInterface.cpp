@@ -49,11 +49,13 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
     QByteArray data = doc.toJson();
 
     QNetworkRequest request;
-    if(this->bIsOnline) {
+    if (this->bIsOnline)
+    {
         qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/optimize";
         request.setUrl(QUrl("http://" REVERSE_PROXY_IP "/optimize")); // For cloud deployment
     }
-    else {
+    else
+    {
         qDebug() << "Sending request at http://localhost:5000/optimize";
         request.setUrl(QUrl("http://localhost:5000/optimize")); // For local testing
     }
@@ -61,7 +63,8 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
 
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
     QNetworkReply *reply = manager->post(request, data);
-    connect(reply, &QNetworkReply::finished, this, [reply, this]() {
+    connect(reply, &QNetworkReply::finished, this, [reply, this]()
+            {
         if (reply->error() == QNetworkReply::NoError) {
             QByteArray response = reply->readAll();
             qDebug() << "Response received:" << response;
@@ -70,28 +73,27 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
             qDebug() << "Error:" << reply->errorString();
             emit optimizationError(reply->errorString());
         }
-        reply->deleteLater();
-    });
+        reply->deleteLater(); });
 }
 
 void CppInterface::downloadSolution()
 {
     qDebug() << "Downloading solution...";
-
-#ifdef CLOUD_DEPLOYMENT
-    qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/download_solution";
-    QNetworkRequest request(QUrl("http://" REVERSE_PROXY_IP "/download_solution")); // For cloud deployment
-#elif defined(CONTAINERIZED_DEPLOYMENT)
-    qDebug() << "Sending request at http://localhost/download_solution";
-    QNetworkRequest request(QUrl("http://localhost/download_solution")); // For containerized deployment
-#else
-    qDebug() << "Sending request at http://localhost:5000/download_solution";
-    QNetworkRequest request(QUrl("http://localhost:5000/download_solution")); // For local testing
-#endif
-
+    QNetworkRequest request;
+    if (this->bIsOnline)
+    {
+        qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/download_solution";
+        request.setUrl(QUrl("http://" REVERSE_PROXY_IP "/download_solution")); // For cloud deployment
+    }
+    else
+    {
+        qDebug() << "Sending request at http://localhost:5000/download_solution";
+        request.setUrl(QUrl("http://localhost:5000/download_solution")); // For local testing
+    }
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
     QNetworkReply *reply = manager->get(request);
-    connect(reply, &QNetworkReply::finished, this, [reply, this]() {
+    connect(reply, &QNetworkReply::finished, this, [reply, this]()
+            {
         if (reply->error() == QNetworkReply::NoError) {
             QByteArray data = reply->readAll();
             qDebug() << "Download completed";
@@ -99,28 +101,27 @@ void CppInterface::downloadSolution()
         } else {
             qDebug() << "Download failed:" << reply->errorString();
         }
-        reply->deleteLater();
-    });
+        reply->deleteLater(); });
 }
 
 void CppInterface::saveSolution(const QString &filePath)
 {
     qDebug() << "saving solution...";
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
-
-#ifdef CLOUD_DEPLOYMENT
-    qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/download_solution";
-    QNetworkRequest request(QUrl("http://" REVERSE_PROXY_IP "/download_solution")); // For cloud deployment
-#elif defined(CONTAINERIZED_DEPLOYMENT)
-    qDebug() << "Sending request at http://localhost/download_solution";
-    QNetworkRequest request(QUrl("http://localhost/download_solution")); // For containerized deployment
-#else
-    qDebug() << "Sending request at http://localhost:5000/download_solution";
-    QNetworkRequest request(QUrl("http://localhost:5000/download_solution")); // For local testing
-#endif
-
+    QNetworkRequest request;
+    if (this->bIsOnline)
+    {
+        qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/download_solution";
+        request.setUrl(QUrl("http://" REVERSE_PROXY_IP "/download_solution")); // For cloud deployment
+    }
+    else
+    {
+        qDebug() << "Sending request at http://localhost:5000/download_solution";
+        request.setUrl(QUrl("http://localhost:5000/download_solution")); // For local testing
+    }
     QNetworkReply *reply = manager->get(request);
-    connect(reply, &QNetworkReply::finished, this, [reply, this, filePath]() {
+    connect(reply, &QNetworkReply::finished, this, [reply, this, filePath]()
+            {
         if (reply->error() == QNetworkReply::NoError) {
             QByteArray data = reply->readAll();
             QFile file(filePath);
@@ -134,8 +135,7 @@ void CppInterface::saveSolution(const QString &filePath)
         } else {
             qDebug() << "Save failed:" << reply->errorString();
         }
-        reply->deleteLater();
-    });
+        reply->deleteLater(); });
 }
 
 void CppInterface::onlineOfflineSwitchChanged(bool isOnline)

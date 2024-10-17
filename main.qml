@@ -67,15 +67,26 @@ ApplicationWindow {
                 Switch {
                     id: onlineOfflineSwitch
                     checked: true
-                    onStateChanged: {
+                    onCheckedChanged: {
                         console.log("onStateChanged: "+checked);
-
+                        cppInterface.onlineOfflineSwitchChanged(checked);
                     }
-                    background: Rectangle {
-                        implicitWidth: 40
-                        implicitHeight: 20
-                        radius: 10
-                        color: onlineOfflineSwitch.checked ? "green" : "white"
+                    indicator: Rectangle {
+                        implicitWidth: 48
+                        implicitHeight: 26
+                        x: onlineOfflineSwitch.leftPadding
+                        y: parent.height / 2 - height / 2
+                        radius: 13
+                        color: onlineOfflineSwitch.checked ? "#17a81a" : "#ffffff"
+                        border.color: onlineOfflineSwitch.checked ? "#17a81a" : "#cccccc"
+                        Rectangle {
+                            x: onlineOfflineSwitch.checked ? parent.width - width : 0
+                            width: 26
+                            height: 26
+                            radius: 13
+                            color: onlineOfflineSwitch.down ? "#cccccc" : "#ffffff"
+                            border.color: onlineOfflineSwitch.checked ? (onlineOfflineSwitch.down ? "#17a81a" : "#21be2b") : "#999999"
+                        }
                     }
                 }
                 Label {
@@ -139,12 +150,11 @@ ApplicationWindow {
             Row {
                 id: inputOutputRow
                 anchors.top: funcTitleBar.bottom
-                anchors.topMargin: 20
+                anchors.topMargin: 30
                 height: 350
                 width: parent.width
                 Column {
                     width: 2 * parent.width / 3
-                    spacing: 20
                     Row {
                         spacing: 20
                         Label {
@@ -165,6 +175,23 @@ ApplicationWindow {
                             onValueChanged: {
                                 console.log("onValueChanged: "+value);
                                 dimensionsLabel.text = value.toString()
+                            }
+                            background: Rectangle {
+                                x: dimensionsInput.leftPadding
+                                y: dimensionsInput.topPadding + dimensionsInput.availableHeight / 2 - height / 2
+                                implicitWidth: 200
+                                implicitHeight: 4
+                                width: dimensionsInput.availableWidth
+                                height: implicitHeight
+                                radius: 2
+                                color: "#bdbebf"
+
+                                Rectangle {
+                                    width: dimensionsInput.visualPosition * parent.width
+                                    height: parent.height
+                                    color: "#21be2b"
+                                    radius: 2
+                                }
                             }
                         }
                         Label {
@@ -193,6 +220,23 @@ ApplicationWindow {
                             value: -1.0
                             stepSize: 0.1
                             onValueChanged: lowerBoundLabel.text = value.toString()
+                            background: Rectangle {
+                                x: lowerBoundInput.leftPadding
+                                y: lowerBoundInput.topPadding + lowerBoundInput.availableHeight / 2 - height / 2
+                                implicitWidth: 200
+                                implicitHeight: 4
+                                width: lowerBoundInput.availableWidth
+                                height: implicitHeight
+                                radius: 2
+                                color: "#bdbebf"
+
+                                Rectangle {
+                                    width: lowerBoundInput.visualPosition * parent.width
+                                    height: parent.height
+                                    color: "#21be2b"
+                                    radius: 2
+                                }
+                            }
                         }
                         Label {
                             id: lowerBoundLabel
@@ -220,6 +264,23 @@ ApplicationWindow {
                             value: 1.0
                             stepSize: 0.1
                             onValueChanged: upperBoundLabel.text = value.toString()
+                            background: Rectangle {
+                                x: upperBoundInput.leftPadding
+                                y: upperBoundInput.topPadding + upperBoundInput.availableHeight / 2 - height / 2
+                                implicitWidth: 200
+                                implicitHeight: 4
+                                width: upperBoundInput.availableWidth
+                                height: implicitHeight
+                                radius: 2
+                                color: "#bdbebf"
+
+                                Rectangle {
+                                    width: upperBoundInput.visualPosition * parent.width
+                                    height: parent.height
+                                    color: "#21be2b"
+                                    radius: 2
+                                }
+                            }
                         }
                         Label {
                             id: upperBoundLabel
@@ -247,6 +308,23 @@ ApplicationWindow {
                             value: 4
                             stepSize: 1
                             onValueChanged: gridSizeFactorLabelP.text = value.toString()
+                            background: Rectangle {
+                                x: gridSizeFactorInputP.leftPadding
+                                y: gridSizeFactorInputP.topPadding + gridSizeFactorInputP.availableHeight / 2 - height / 2
+                                implicitWidth: 200
+                                implicitHeight: 4
+                                width: gridSizeFactorInputP.availableWidth
+                                height: implicitHeight
+                                radius: 2
+                                color: "#bdbebf"
+
+                                Rectangle {
+                                    width: gridSizeFactorInputP.visualPosition * parent.width
+                                    height: parent.height
+                                    color: "#21be2b"
+                                    radius: 2
+                                }
+                            }
                         }
                         Label {
                             id: gridSizeFactorLabelP
@@ -274,6 +352,23 @@ ApplicationWindow {
                             value: 4
                             stepSize: 1
                             onValueChanged: gridSizeFactorLabelQ.text = value.toString()
+                            background: Rectangle {
+                                x: gridSizeFactorInputQ.leftPadding
+                                y: gridSizeFactorInputQ.topPadding + gridSizeFactorInputQ.availableHeight / 2 - height / 2
+                                implicitWidth: 200
+                                implicitHeight: 4
+                                width: gridSizeFactorInputQ.availableWidth
+                                height: implicitHeight
+                                radius: 2
+                                color: "#bdbebf"
+
+                                Rectangle {
+                                    width: gridSizeFactorInputQ.visualPosition * parent.width
+                                    height: parent.height
+                                    color: "#21be2b"
+                                    radius: 2
+                                }
+                            }
                         }
                         Label {
                             id: gridSizeFactorLabelQ
@@ -413,7 +508,6 @@ ApplicationWindow {
                         }
                     }
                 }
-
                 Column {
                     width: parent.width / 3
                     height: 300
@@ -583,7 +677,6 @@ ApplicationWindow {
                         }
                     }
                 }
-
                 Connections {
                     target: cppInterface
                     function onOptimizationDone(response) {
@@ -619,13 +712,13 @@ ApplicationWindow {
 
             Row {
                 id: functionOutputLog
-                width: parent.width
-                height: 250
+                width: parent.width - 100
+                height: 230
                 anchors.top: inputOutputRow.bottom
                 anchors.topMargin: 20
                 spacing:20
                 ScrollView{
-                    width: parent.width - 100
+                    width: parent.width - 50
                     height: parent.height
                     TextArea {
                         id: logsTextArea

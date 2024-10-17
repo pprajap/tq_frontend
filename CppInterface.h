@@ -11,7 +11,7 @@ class CppInterface : public QObject
 public:
     explicit CppInterface(QObject *parent = nullptr);
 
-    Q_INVOKABLE void runOptimization(int dimensions, double lowerBound, double upperBound, int gridSizeFactorP, int gridSizeFactorQ, int evals, const QString &funcName, bool isFunc, bool isVect, bool withCache, bool withLog, bool withOpt, bool forceRecal=false);
+    Q_INVOKABLE void runOptimization(int dimensions, double lowerBound, double upperBound, int gridSizeFactorP, int gridSizeFactorQ, int evals, const QString &funcName, bool isFunc, bool isVect, bool withCache, bool withLog, bool withOpt, bool forceRecal = false);
     Q_INVOKABLE void downloadSolution();
     Q_INVOKABLE void saveSolution(const QString &filePath);
     Q_INVOKABLE void onlineOfflineSwitchChanged(bool isOnline);
