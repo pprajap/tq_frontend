@@ -1,4 +1,6 @@
 # tq-frontend Project
+`tq-frontend` is a frontend application designed to work across different platforms including Linux, macOS, and Windows. The project leverages Docker to ensure consistent environments and easy deployment. This README provides instructions on building and running the Docker images for both desktop and web versions of the application.
+
 
 ## Table of Contents
 - [tq-frontend Project](#tq-frontend-project)
@@ -76,3 +78,4 @@ push_frontend_desktop_docker_image.sh
 ```sh
 push_frontend_web_docker_image.sh
 ```
+
