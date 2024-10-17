@@ -52,7 +52,11 @@ WORKDIR /app
 ## COPY --from=builder /opt/emsdk /emsdk
 
 # Copy the built files from the builder stage
-COPY --from=builder /app/build /app
+# apptq_frontend.html, apptq_frontend.js, apptq_frontend.wasm, apptq_frontend.worker.js, qtloader.js, qtlogo.svg
+COPY --from=builder /app/build/*.html /app
+COPY --from=builder /app/build/*.js /app
+COPY --from=builder /app/build/*.wasm /app
+COPY --from=builder /app/build/*.svg /app
 
 # Expose port 3000 to allow external access
 EXPOSE 3000
