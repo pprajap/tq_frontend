@@ -22,9 +22,6 @@ qt_add_executable(apptq_frontend
     resources.qrc
 )
 
-# Define flags based on the deployment type
-target_compile_definitions(apptq_frontend PRIVATE CLOUD_DEPLOYMENT)
-
 # Add QML module to the target
 qt_add_qml_module(apptq_frontend
     URI tq_frontend
