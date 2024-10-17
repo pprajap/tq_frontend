@@ -6,7 +6,7 @@ import Qt.labs.platform
 ApplicationWindow {
     id: mainWindow
     width: 900
-    height: 800
+    height: 900
     visible: true
     title: "Terra Quantum Optimization"
 
@@ -713,7 +713,7 @@ ApplicationWindow {
             Row {
                 id: functionOutputLog
                 width: parent.width - 100
-                height: 230
+                height: 300
                 anchors.top: inputOutputRow.bottom
                 anchors.topMargin: 20
                 spacing:20
