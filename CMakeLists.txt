@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find required Qt6 packages
-find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Network Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Network Widgets Test)
 
 # Add executable target for the application
 qt_add_executable(apptq_frontend
@@ -63,5 +63,25 @@ install(TARGETS apptq_frontend
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-# Add the tests subdirectory
-add_subdirectory(tests)
+# Add test executable target
+qt_add_executable(tq_frontend_tests
+    tests/test_ex.cpp
+    CppInterface.h
+    CppInterface.cpp
+)
+
+# Specify include directories
+target_include_directories(tq_frontend_tests
+    PRIVATE ${CMAKE_SOURCE_DIR}
+)
+
+# Link test target with required Qt6 libraries
+target_link_libraries(tq_frontend_tests
+    PRIVATE Qt6::Core Qt6::Quick Qt6::QuickControls2 Qt6::Network Qt6::Widgets Qt6::Test
+)
+
+# Enable testing
+enable_testing()
+
+# Add test
+add_test(NAME tq_frontend_tests COMMAND tq_frontend_tests)
