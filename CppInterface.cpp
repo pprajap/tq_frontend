@@ -48,15 +48,15 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
     QJsonDocument doc(json);
     QByteArray data = doc.toJson();
 
+    QNetworkRequest request;
     if(this->bIsOnline) {
         qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/optimize";
-        QNetworkRequest request(QUrl("http://" REVERSE_PROXY_IP "/optimize")); // For cloud deployment
+        request.setUrl(QUrl("http://" REVERSE_PROXY_IP "/optimize")); // For cloud deployment
     }
     else {
         qDebug() << "Sending request at http://localhost:5000/optimize";
-        QNetworkRequest request(QUrl("http://localhost:5000/optimize")); // For local testing
+        request.setUrl(QUrl("http://localhost:5000/optimize")); // For local testing
     }
-
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
