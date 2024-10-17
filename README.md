@@ -1,47 +1,78 @@
 # tq-frontend Project
 
-# Build the Docker Image for Desktop
+## Table of Contents
+- [tq-frontend Project](#tq-frontend-project)
+  - [Table of Contents](#table-of-contents)
+  - [1. Build the Docker Image for Desktop](#1-build-the-docker-image-for-desktop)
+  - [2. Run the Container](#2-run-the-container)
+    - [For Linux](#for-linux)
+    - [For macOS](#for-macos)
+    - [For Windows:](#for-windows)
+  - [3. Build the Docker Image for Web](#3-build-the-docker-image-for-web)
+  - [4. Run the Docker Container for Web](#4-run-the-docker-container-for-web)
+  - [5. Push Docker Images to Docker Hub](#5-push-docker-images-to-docker-hub)
 
+## 1. Build the Docker Image for Desktop
 ```sh
-docker build -f qtdeskDockerfile -t tq-frontend-desktop .
+./build_frontend_desktop_docker_image.sh
 ```
 
-# Run the Container and Mount the Current Directory to /app in the Container
-
+## 2. Run the Container
+### For Linux
 ```sh
 xhost +local:docker
 docker run -it --rm \
-    -e DISPLAY=$DISPLAY \
-    -v /tmp/.X11-unix:/tmp/.X11-unix \
-    --device /dev/dri \
-    -v $(pwd):/app \
-    tq-frontend-desktop
+    --name tq-frontend-desktop \
+    -p 4000:4000 \
+    --network tq-network \
+    --env DISPLAY=${DISPLAY} \
+    --volume /tmp/.X11-unix:/tmp/.X11-unix \
+    --device /dev/dri:/dev/dri \
+    pprajapa/tq-frontend-desktop:latest
 ```
-
-# Build the Docker Image for Web
-
+### For macOS
+1. Install XQuartz: Download and install XQuartz from XQuartz.org.  
+2. Open XQuartz: Go to Preferences > Security and check the box for "Allow connections from network clients".  
+3. Restart XQuartz.  
+4. Run the following command in the terminal:  
 ```sh
-docker build -f qtwasmDockerfile -t tq-frontend-web .
+xhost +
+docker run -it --rm \
+    --name tq-frontend-desktop \
+    -p 4000:4000 \
+    --network tq-network \
+    --env DISPLAY=host.docker.internal:0 \
+    pprajapa/tq-frontend-desktop:latest
 ```
 
-# Run the Docker Container for Web
-
+### For Windows:
+1. Install VcXsrv: Download and install VcXsrv from SourceForge.  
+2. Open VcXsrv: Go with the default settings.  
+3. Run the following command in the terminal:  
 ```sh
-docker run -it --rm -p 3000:3000 tq-frontend-web
+set DISPLAY=host.docker.internal:0
+docker run -it --rm \
+    --name tq-frontend-desktop \
+    -p 4000:4000 \
+    --network tq-network \
+    --env DISPLAY=host.docker.internal:0 \
+    pprajapa/tq-frontend-desktop:latest
 ```
 
-
-# Build the Docker Image for Web (Light Version without Qt WebAssembly Packages)
-
+## 3. Build the Docker Image for Web
 ```sh
-docker build -f qtwebDockerfile -t tq-frontend-web-light .
+./build_frontend_web_docker_image.sh
 ```
 
-# Run the Docker Container for Web (Light Version without Qt WebAssembly Packages)
-
+## 4. Run the Docker Container for Web
 ```sh
-docker run -it --rm -p 3000:3000 tq-frontend-web-light
+docker run --rm -p 3000:3000 -it tq-frontend-web
 ```
 
-**Comment:** Frontend service is running. Visit [http://localhost:3000/apptq_frontend.html](http://localhost:3000/apptq_frontend.html). Replace localhost with appropriate EXTERNAL_IP in case the frontend is deployed on cloud.
-
+## 5. Push Docker Images to Docker Hub
+```sh
+push_frontend_desktop_docker_image.sh
+```
+```sh
+push_frontend_web_docker_image.sh
+```
