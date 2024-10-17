@@ -48,16 +48,14 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
     QJsonDocument doc(json);
     QByteArray data = doc.toJson();
 
-#ifdef CLOUD_DEPLOYMENT
-    qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/optimize";
-    QNetworkRequest request(QUrl("http://" REVERSE_PROXY_IP "/optimize")); // For cloud deployment
-#elif defined(CONTAINERIZED_DEPLOYMENT)
-    qDebug() << "Sending request at http://localhost/optimize";
-    QNetworkRequest request(QUrl("http://localhost/optimize")); // For containerized deployment
-#else
-    qDebug() << "Sending request at http://localhost:5000/optimize";
-    QNetworkRequest request(QUrl("http://localhost:5000/optimize")); // For local testing
-#endif
+    if(this->bIsOnline) {
+        qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/optimize";
+        QNetworkRequest request(QUrl("http://" REVERSE_PROXY_IP "/optimize")); // For cloud deployment
+    }
+    else {
+        qDebug() << "Sending request at http://localhost:5000/optimize";
+        QNetworkRequest request(QUrl("http://localhost:5000/optimize")); // For local testing
+    }
 
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
@@ -138,4 +136,10 @@ void CppInterface::saveSolution(const QString &filePath)
         }
         reply->deleteLater();
     });
+}
+
+void CppInterface::onlineOfflineSwitchChanged(bool isOnline)
+{
+    qDebug() << "Online/Offline Switch state changed to:" << (isOnline ? "ON" : "OFF");
+    this->bIsOnline = isOnline;
 }
