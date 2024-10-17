@@ -58,6 +58,9 @@ COPY --from=builder /app/build/*.js /app
 COPY --from=builder /app/build/*.wasm /app
 COPY --from=builder /app/build/*.svg /app
 
+# Replace the default Qt logo with your custom logo
+COPY tq-logo.svg /app/qtlogo.svg
+
 # Expose port 3000 to allow external access
 EXPOSE 3000
 
