@@ -3,6 +3,7 @@ build/
 *.o
 *.a
 *.so
+*.txt.user
 
 # Ignore temporary files
 *.log
