@@ -23,7 +23,7 @@ qt_add_executable(tq_frontend_tests
 
 # Specify include directories
 target_include_directories(tq_frontend_tests
-    PRIVATE ${CMAKE_SOURCE_DIR}
+    PRIVATE ${CMAKE_SOURCE_DIR}/..
 )
 
 # Link test target with required Qt6 libraries
