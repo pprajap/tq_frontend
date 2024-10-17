@@ -62,3 +62,6 @@ install(TARGETS apptq_frontend
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+# Add the tests subdirectory
+add_subdirectory(tests)
