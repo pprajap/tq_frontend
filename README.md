@@ -12,11 +12,10 @@
     - [For Windows:](#for-windows)
   - [3. Build the Docker Image for Web](#3-build-the-docker-image-for-web)
   - [4. Run the Docker Container for Web](#4-run-the-docker-container-for-web)
-  - [5. Push Docker Images to Docker Hub](#5-push-docker-images-to-docker-hub)
 
 ## 1. Build the Docker Image for Desktop
 ```sh
-./build_frontend_desktop_docker_image.sh
+docker build -f qtdeskDockerfile -t tq-frontend-desktop .
 ```
 
 ## 2. Run the Container
@@ -24,13 +23,10 @@
 ```sh
 xhost +local:docker
 docker run -it --rm \
-    --name tq-frontend-desktop \
-    -p 4000:4000 \
-    --network tq-network \
     --env DISPLAY=${DISPLAY} \
     --volume /tmp/.X11-unix:/tmp/.X11-unix \
     --device /dev/dri:/dev/dri \
-    pprajapa/tq-frontend-desktop:latest
+    tq-frontend-desktop
 ```
 ### For macOS
 1. Install XQuartz: Download and install XQuartz from XQuartz.org.  
@@ -40,11 +36,8 @@ docker run -it --rm \
 ```sh
 xhost +
 docker run -it --rm \
-    --name tq-frontend-desktop \
-    -p 4000:4000 \
-    --network tq-network \
     --env DISPLAY=host.docker.internal:0 \
-    pprajapa/tq-frontend-desktop:latest
+    tq-frontend-desktop
 ```
 
 ### For Windows:
@@ -54,28 +47,16 @@ docker run -it --rm \
 ```sh
 set DISPLAY=host.docker.internal:0
 docker run -it --rm \
-    --name tq-frontend-desktop \
-    -p 4000:4000 \
-    --network tq-network \
     --env DISPLAY=host.docker.internal:0 \
-    pprajapa/tq-frontend-desktop:latest
+    tq-frontend-desktop
 ```
 
 ## 3. Build the Docker Image for Web
 ```sh
-./build_frontend_web_docker_image.sh
+docker build -f qtwebDockerfile -t tq-frontend-web .
 ```
 
 ## 4. Run the Docker Container for Web
 ```sh
 docker run --rm -p 3000:3000 -it tq-frontend-web
 ```
-
-## 5. Push Docker Images to Docker Hub
-```sh
-push_frontend_desktop_docker_image.sh
-```
-```sh
-push_frontend_web_docker_image.sh
-```
-
