@@ -56,8 +56,8 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
     }
     else
     {
-        qDebug() << "Sending request at http://localhost:5000/optimize";
-        request.setUrl(QUrl("http://localhost:5000/optimize")); // For local testing
+        qDebug() << "Sending request at http://tq-backend-local:5000/optimize";
+        request.setUrl(QUrl("http://tq-backend-local:5000/optimize")); // For local testing
     }
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
