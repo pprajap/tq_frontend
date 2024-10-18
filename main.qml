@@ -10,6 +10,8 @@ ApplicationWindow {
     visible: true
     title: "Terra Quantum Optimization"
 
+    property bool isDesktopBuild: !isWasmBuild  // Set based on the context property
+
     property int dimensions: 0
     property double lowerBound: 0.0
     property double upperBound: 0.0
@@ -60,6 +62,7 @@ ApplicationWindow {
 
             Row {
                 id:onlineOfflineBar
+                visible: isDesktopBuild
                 height: 30
                 anchors.top: titleBar.bottom
                 anchors.topMargin: 30

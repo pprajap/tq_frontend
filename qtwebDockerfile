@@ -10,8 +10,11 @@ WORKDIR /app
 # Copy the project files into the container
 COPY . /app
 
+# Set an environment variable to indicate the build type
+ENV BUILD_TYPE=wasm
+
 # Create the build directory, configure the project with CMake, and build it using Ninja
-RUN mkdir build && cd build && qt-cmake .. -G Ninja -B . && cmake --build .
+RUN mkdir build && cd build && qt-cmake .. -G Ninja -DBUILD_TYPE=${BUILD_TYPE} -B . && cmake --build .
 
 ## Stage 2: Serve the built files
 # Use the official Python base image
