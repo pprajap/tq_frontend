@@ -57,7 +57,7 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
     else
     {
         qDebug() << "Sending request at http://tq-backend-local:5000/optimize";
-        request.setUrl(QUrl("http://tq-backend-local:5000/optimize")); // For local testing
+        request.setUrl(QUrl("http://tq-backend-local:5000/optimize")); // if your backend is running locally, then use localhost:5000
     }
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
@@ -87,8 +87,8 @@ void CppInterface::downloadSolution()
     }
     else
     {
-        qDebug() << "Sending request at http://localhost:5000/download_solution";
-        request.setUrl(QUrl("http://localhost:5000/download_solution")); // For local testing
+        qDebug() << "Sending request at http://tq-backend-local:5000/download_solution";
+        request.setUrl(QUrl("http://tq-backend-local:5000/download_solution")); // if your backend is running locally, then use localhost:5000
     }
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
     QNetworkReply *reply = manager->get(request);
@@ -116,8 +116,8 @@ void CppInterface::saveSolution(const QString &filePath)
     }
     else
     {
-        qDebug() << "Sending request at http://localhost:5000/download_solution";
-        request.setUrl(QUrl("http://localhost:5000/download_solution")); // For local testing
+        qDebug() << "Sending request at http://tq-backend-local:5000/download_solution";
+        request.setUrl(QUrl("http://tq-backend-local:5000/download_solution")); // if your backend is running locally, then use localhost:5000
     }
     QNetworkReply *reply = manager->get(request);
     connect(reply, &QNetworkReply::finished, this, [reply, this, filePath]()
