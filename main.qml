@@ -5,8 +5,8 @@ import Qt.labs.platform
 
 ApplicationWindow {
     id: mainWindow
-    // width: 900
-    // height: 900
+    width: 900
+    height: 900
     visible: true
     title: "Terra Quantum Optimization"
     background: Rectangle {
