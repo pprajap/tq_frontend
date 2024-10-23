@@ -46,7 +46,7 @@ RUN curl -L -o qt-installer.run "https://download.qt.io/official_releases/online
 # Create a script to run the installer non-interactively
 RUN echo '#!/bin/bash\n\
 export QT_QPA_PLATFORM=minimal\n\
-./qt-installer.run --script qt-noninteractive.qs' > install-qt.sh && \
+./qt-installer.run --script qt-noninteractive.qs --qt-email=$QT_EMAIL --qt-password=$QT_PASSWORD'' > install-qt.sh && \
     chmod +x install-qt.sh
 
 # Copy the non-interactive installation script into the container
@@ -55,6 +55,10 @@ COPY qt-noninteractive.qs .
 # Set build arguments for Qt credentials
 ARG QT_ACCOUNT_EMAIL
 ARG QT_ACCOUNT_PASSWORD
+
+# Set environment variables for Qt credentials
+ENV QT_ACCOUNT_EMAIL=$QT_ACCOUNT_EMAIL
+ENV QT_ACCOUNT_PASSWORD=$QT_ACCOUNT_PASSWORD
 
 # Run the installation script with the supplied credentials
 RUN ./install-qt.sh
