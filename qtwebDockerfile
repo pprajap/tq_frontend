@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y \
     libxcb-sync1 \
     libxcb-xfixes0 \
     libxcb-xkb1 \
+    locales \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -38,6 +39,7 @@ RUN curl -L -o qt-installer.run "https://download.qt.io/official_releases/online
 
 # Create a script to run the installer non-interactively
 RUN echo '#!/bin/bash\n\
+export QT_QPA_PLATFORM=offscreen\n\
 ./qt-installer.run --script qt-noninteractive.qs' > install-qt.sh && \
     chmod +x install-qt.sh
 
