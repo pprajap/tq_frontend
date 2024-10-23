@@ -1,8 +1,51 @@
 ## Stage 1: Build the Qt WASM files
-FROM stateoftheartio/qt6:6.6-wasm-aqt as builder
+FROM ubuntu:latest
 
-# Set user as root for all ops
-USER root
+# Install necessary dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    build-essential \
+    cmake \
+    ninja-build \
+    libgl1-mesa-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download the Qt Online Installer
+RUN curl -L -o qt-installer.run "https://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run" && \
+    chmod +x qt-installer.run
+
+# Create a script to run the installer non-interactively
+RUN echo '#!/bin/bash\n\
+./qt-installer.run --script qt-noninteractive.qs' > install-qt.sh && \
+    chmod +x install-qt.sh
+
+# Copy the non-interactive installation script into the container
+COPY qt-noninteractive.qs .
+
+# Set build arguments for Qt credentials
+ARG QT_ACCOUNT_EMAIL
+ARG QT_ACCOUNT_PASSWORD
+
+# Run the installation script with the supplied credentials
+RUN ./install-qt.sh
+
+# Set environment variables for WebAssembly
+ENV EMSDK_VERSION=3.1.56
+ENV EMSDK_PATH=/opt/emsdk
+ENV PATH="${EMSDK_PATH}/upstream/emscripten:${EMSDK_PATH}/upstream/bin:${EMSDK_PATH}/node/bin:${EMSDK_PATH}/python/3.9.2_64bit/bin:$PATH"
+
+# Install dependencies required for emsdk
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install emsdk
+RUN git clone https://github.com/emscripten-core/emsdk.git $EMSDK_PATH && \
+    cd $EMSDK_PATH && \
+    ./emsdk install $EMSDK_VERSION && \
+    ./emsdk activate $EMSDK_VERSION
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -14,56 +57,4 @@ COPY . /app
 ENV BUILD_TYPE=wasm
 
 # Create the build directory, configure the project with CMake, and build it using Ninja
-RUN mkdir build && cd build && qt-cmake .. -G Ninja -DBUILD_TYPE=${BUILD_TYPE} -B . && cmake --build .
-
-## Stage 2: Serve the built files
-# Use the official Python base image
-FROM python:3.9-slim
-
-# Set environment variables
-ENV EMSDK_VERSION=3.1.37
-ENV EMSDK_PATH=/opt/emsdk
-ENV PATH="${EMSDK_PATH}/upstream/emscripten:${EMSDK_PATH}/upstream/bin:${EMSDK_PATH}/node/bin:${EMSDK_PATH}/python/3.9.2_64bit/bin:$PATH"
-
-# Install dependencies required for emsdk
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    build-essential \
-    cmake \
-    && rm -rf /var/lib/apt/lists/*
-
-# Clone the Emscripten SDK repo
-RUN git clone https://github.com/emscripten-core/emsdk.git $EMSDK_PATH
-
-# Install and activate the specified version of the Emscripten SDK
-RUN cd $EMSDK_PATH \
-    && git fetch \
-    && ./emsdk install ${EMSDK_VERSION} \
-    && ./emsdk activate ${EMSDK_VERSION}
-
-# Set up the environment variables permanently in the shell
-RUN echo "source ${EMSDK_PATH}/emsdk_env.sh" >> ~/.bashrc
-
-# Activate EMSDK for the current session
-RUN /bin/bash -c "source ${EMSDK_PATH}/emsdk_env.sh"
-
-# Set the working directory inside the container
-WORKDIR /app
-
-# Copy the built files from the builder stage
-# apptq_frontend.html, apptq_frontend.js, apptq_frontend.wasm, apptq_frontend.worker.js, qtloader.js, qtlogo.svg
-COPY --from=builder /app/build/*.html /app
-COPY --from=builder /app/build/*.js /app
-COPY --from=builder /app/build/*.wasm /app
-COPY --from=builder /app/build/*.svg /app
-
-# Replace the default Qt logo with your custom logo
-COPY tq-logo.svg /app/qtlogo.svg
-
-# Expose port 3000 to allow external access
-EXPOSE 3000
-
-# Command to run a simple HTTP server on port 3000
-CMD ["sh", "-c", "python3 /opt/emsdk/upstream/emscripten/emrun.py --no_browser --port 3000 ."]
-
+RUN mkdir build && cd build && cmake --build .. && make
