@@ -13,8 +13,6 @@ ApplicationWindow {
         color: "#0e0b0b"
     }
 
-    property bool isDesktopBuild: !isWasmBuild  // Set based on the context property
-
     property int dimensions: 0
     property double lowerBound: 0.0
     property double upperBound: 0.0
@@ -65,14 +63,14 @@ ApplicationWindow {
 
         Row {
             id:onlineOfflineBar
-            visible: isDesktopBuild
+            visible: !isDeployedOnCloud
             height: 30
             anchors.top: titleBar.bottom
             anchors.topMargin: 30
             spacing: 20
             Switch {
                 id: onlineOfflineSwitch
-                checked: true
+                checked: false
                 onCheckedChanged: {
                     console.log("onStateChanged: "+checked);
                     cppInterface.onlineOfflineSwitchChanged(checked);

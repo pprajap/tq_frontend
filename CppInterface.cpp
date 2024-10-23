@@ -49,6 +49,10 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
     QByteArray data = doc.toJson();
 
     QNetworkRequest request;
+#ifdef DEPLOYMENT_LOCATION_CLOUD
+    qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/optimize";
+    request.setUrl(QUrl("http://" REVERSE_PROXY_IP "/optimize")); // For cloud deployment
+#else
     if (this->bIsOnline)
     {
         qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/optimize";
@@ -56,9 +60,15 @@ void CppInterface::runOptimization(int dimensions, double lowerBound, double upp
     }
     else
     {
+#ifdef TARGET_BUILD_WASM
+        qDebug() << "Sending request at http://localhost:5000/optimize";
+        request.setUrl(QUrl("http://localhost:5000/optimize")); // if your backend is running locally, then use localhost:5000
+#else
         qDebug() << "Sending request at http://tq-backend-local:5000/optimize";
-        request.setUrl(QUrl("http://tq-backend-local:5000/optimize")); // if your backend is running locally, then use localhost:5000
+        request.setUrl(QUrl("http://tq-backend-local:5000/optimize"));
+#endif
     }
+#endif
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
@@ -80,6 +90,10 @@ void CppInterface::downloadSolution()
 {
     qDebug() << "Downloading solution...";
     QNetworkRequest request;
+#ifdef DEPLOYMENT_LOCATION_CLOUD
+    qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/download_solution";
+    request.setUrl(QUrl("http://" REVERSE_PROXY_IP "/download_solution")); // For cloud deployment
+#else
     if (this->bIsOnline)
     {
         qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/download_solution";
@@ -87,9 +101,15 @@ void CppInterface::downloadSolution()
     }
     else
     {
+#ifdef TARGET_BUILD_WASM
+        qDebug() << "Sending request at http://localhost:5000/download_solution";
+        request.setUrl(QUrl("http://localhost:5000/download_solution")); // if your backend is running locally, then use localhost:5000
+#else
         qDebug() << "Sending request at http://tq-backend-local:5000/download_solution";
         request.setUrl(QUrl("http://tq-backend-local:5000/download_solution")); // if your backend is running locally, then use localhost:5000
+#endif
     }
+#endif
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
     QNetworkReply *reply = manager->get(request);
     connect(reply, &QNetworkReply::finished, this, [reply, this]()
@@ -109,6 +129,10 @@ void CppInterface::saveSolution(const QString &filePath)
     qDebug() << "saving solution...";
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
     QNetworkRequest request;
+#ifdef DEPLOYMENT_LOCATION_CLOUD
+    qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/download_solution";
+    request.setUrl(QUrl("http://" REVERSE_PROXY_IP "/download_solution")); // For cloud deployment
+#else
     if (this->bIsOnline)
     {
         qDebug() << "Sending request at http://" REVERSE_PROXY_IP "/download_solution";
@@ -116,9 +140,15 @@ void CppInterface::saveSolution(const QString &filePath)
     }
     else
     {
+#ifdef TARGET_BUILD_WASM
+        qDebug() << "Sending request at http://localhost:5000/download_solution";
+        request.setUrl(QUrl("http://localhost:5000/download_solution")); // if your backend is running locally, then use localhost:5000
+#else
         qDebug() << "Sending request at http://tq-backend-local:5000/download_solution";
         request.setUrl(QUrl("http://tq-backend-local:5000/download_solution")); // if your backend is running locally, then use localhost:5000
+#endif
     }
+#endif
     QNetworkReply *reply = manager->get(request);
     connect(reply, &QNetworkReply::finished, this, [reply, this, filePath]()
             {

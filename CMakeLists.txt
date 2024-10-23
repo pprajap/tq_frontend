@@ -14,16 +14,28 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Find required Qt6 packages
 find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Network Widgets Test)
 
-# Check for the BUILD_TYPE environment variable
-if(DEFINED ENV{BUILD_TYPE})
-    set(BUILD_TYPE $ENV{BUILD_TYPE})
+# Check for the DEPLOYMENT_LOCATION environment variable
+if(DEFINED ENV{DEPLOYMENT_LOCATION})
+    set(DEPLOYMENT_LOCATION $ENV{DEPLOYMENT_LOCATION})
 else()
-    set(BUILD_TYPE "desktop")
+    set(DEPLOYMENT_LOCATION "localhost")
 endif()
 
 # Add a preprocessor definition based on the build type
-if(BUILD_TYPE STREQUAL "wasm")
-    add_definitions(-DBUILD_TYPE_WASM)
+if(DEPLOYMENT_LOCATION STREQUAL "cloud")
+    add_definitions(-DDEPLOYMENT_LOCATION_CLOUD)
+endif()
+
+# Check for the TARGET_BUILD environment variable
+if(DEFINED ENV{TARGET_BUILD})
+    set(TARGET_BUILD $ENV{TARGET_BUILD})
+else()
+    set(TARGET_BUILD "desktop")
+endif()
+
+# Add a preprocessor definition based on the build type
+if(TARGET_BUILD STREQUAL "wasm")
+    add_definitions(-DTARGET_BUILD_WASM)
 endif()
 
 # Add executable target for the application
