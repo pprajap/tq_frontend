@@ -12,8 +12,8 @@ Controller.prototype.IntroductionPageCallback = function() {
 Controller.prototype.CredentialsPageCallback = function() {
     // Enter login credentials
     var widget = gui.currentPageWidget();
-    widget.loginWidget.EmailLineEdit.setText(installer.value("qt_account_email"));
-    widget.loginWidget.PasswordLineEdit.setText(installer.value("qt_account_password"));
+    widget.loginWidget.EmailLineEdit.setText(installer.environmentVariable("QT_ACCOUNT_EMAIL"));
+    widget.loginWidget.PasswordLineEdit.setText(installer.environmentVariable("QT_ACCOUNT_PASSWORD"));
     gui.clickButton(buttons.NextButton);
 }
 
