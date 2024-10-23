@@ -33,13 +33,19 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Set locale to UTF-8
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
 # Download the Qt Online Installer
 RUN curl -L -o qt-installer.run "https://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run" && \
     chmod +x qt-installer.run
 
 # Create a script to run the installer non-interactively
 RUN echo '#!/bin/bash\n\
-export QT_QPA_PLATFORM=offscreen\n\
+export QT_QPA_PLATFORM=minimal\n\
 ./qt-installer.run --script qt-noninteractive.qs' > install-qt.sh && \
     chmod +x install-qt.sh
 
