@@ -60,6 +60,13 @@ RUN ./qt-installer.run \
     --confirm-command \
     install qt.qt6.680.linux_gcc_64 qt.qt6.680.wasm_multithread qt.qt6.680.wasm_singlethread
 
+# Set up environment variables
+ENV QT_BASE_DIR=/opt/Qt/6.8.0/gcc_64
+ENV PATH=$QT_BASE_DIR/bin:$PATH
+ENV LD_LIBRARY_PATH=$QT_BASE_DIR/lib
+ENV QML2_IMPORT_PATH=$QT_BASE_DIR/qml
+ENV QT_PLUGIN_PATH=$QT_BASE_DIR/plugins
+
 # # Create a script to run the installer non-interactively
 # RUN echo '#!/bin/bash\n\
 # export QT_QPA_PLATFORM=minimal\n\
