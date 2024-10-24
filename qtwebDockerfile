@@ -39,40 +39,48 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-# Download the Qt Online Installer
-RUN curl -L -o qt-installer.run "https://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run" && \
-    chmod +x qt-installer.run
-
-# Create a script to run the installer non-interactively
-RUN echo '#!/bin/bash\n\
-export QT_QPA_PLATFORM=minimal\n\
-./qt-installer.run --script qt-noninteractive.qs' > install-qt.sh && \
-    chmod +x install-qt.sh
-
-# Copy the non-interactive installation script into the container
-COPY qt-noninteractive.qs .
-
-# Set build arguments for Qt credentials
-ARG QT_ACCOUNT_EMAIL
-ARG QT_ACCOUNT_PASSWORD
-
 # Set environment variables for Qt credentials
 ENV QT_ACCOUNT_EMAIL=$QT_ACCOUNT_EMAIL
 ENV QT_ACCOUNT_PASSWORD=$QT_ACCOUNT_PASSWORD
 
-# Run the installation script with the supplied credentials
-RUN ./install-qt.sh
+# Download the Qt Online Installer
+RUN curl -L -o qt-installer.run "https://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run" && \
+    chmod +x qt-installer.run
+
+RUN ./qt-installer.run \
+    --email $QT_ACCOUNT_EMAIL \
+    --pw $QT_ACCOUNT_PASSWORD \
+    --root /opt/Qt \
+    --accept-licenses \
+    --default-answer \
+    --accept-obligations \
+    --confirm-command \
+    install qt.qt6.680.linux_gcc_64 qt.qt6.680.wasm_multithread qt.qt6.680.wasm_singlethread
+
+# # Create a script to run the installer non-interactively
+# RUN echo '#!/bin/bash\n\
+# export QT_QPA_PLATFORM=minimal\n\
+# ./qt-installer.run --script qt-noninteractive.qs' > install-qt.sh && \
+#     chmod +x install-qt.sh
+
+# # Copy the non-interactive installation script into the container
+# COPY qt-noninteractive.qs .
+
+# # Set build arguments for Qt credentials
+# ARG QT_ACCOUNT_EMAIL
+# ARG QT_ACCOUNT_PASSWORD
+
+# # Set environment variables for Qt credentials
+# ENV QT_ACCOUNT_EMAIL=$QT_ACCOUNT_EMAIL
+# ENV QT_ACCOUNT_PASSWORD=$QT_ACCOUNT_PASSWORD
+
+# # Run the installation script with the supplied credentials
+# RUN ./install-qt.sh
 
 # Set environment variables for WebAssembly
 ENV EMSDK_VERSION=3.1.56
 ENV EMSDK_PATH=/opt/emsdk
 ENV PATH="${EMSDK_PATH}/upstream/emscripten:${EMSDK_PATH}/upstream/bin:${EMSDK_PATH}/node/bin:${EMSDK_PATH}/python/3.9.2_64bit/bin:$PATH"
-
-# Install dependencies required for emsdk
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
 
 # Install emsdk
 RUN git clone https://github.com/emscripten-core/emsdk.git $EMSDK_PATH && \
@@ -85,9 +93,6 @@ WORKDIR /app
 
 # Copy the project files into the container
 COPY . /app
-
-# Set an environment variable to indicate the build type
-ENV BUILD_TYPE=wasm
 
 # Create the build directory, configure the project with CMake, and build it using Ninja
 RUN mkdir build && cd build && cmake --build .. && make
