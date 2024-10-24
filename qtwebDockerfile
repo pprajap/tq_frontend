@@ -98,4 +98,4 @@ WORKDIR /app
 COPY . /app
 
 # Create the build directory, configure the project with CMake, and build it using Ninja
-RUN mkdir build && cd build && cmake --build .. && make
+RUN mkdir build && cd build && cmake .. && make
