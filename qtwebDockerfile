@@ -39,6 +39,9 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
+# Set build arguments for Qt credentials
+ARG QT_ACCOUNT_EMAIL
+ARG QT_ACCOUNT_PASSWORD
 # Set environment variables for Qt credentials
 ENV QT_ACCOUNT_EMAIL=$QT_ACCOUNT_EMAIL
 ENV QT_ACCOUNT_PASSWORD=$QT_ACCOUNT_PASSWORD
