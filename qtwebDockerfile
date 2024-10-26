@@ -1,8 +1,92 @@
-## Stage 1: Build the Qt WASM files
-FROM stateoftheartio/qt6:6.6-wasm-aqt as builder
+# Use the official Ubuntu 24.04 image as the base image
+FROM ubuntu:24.04
 
-# Set user as root for all ops
-USER root
+# Avoid prompts from apt
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install necessary dependencies
+RUN apt-get update && apt-get install -y \
+    sudo \
+    build-essential \
+    git \
+    curl \
+    wget \
+    python3 \
+    python3-pip \
+    mesa-common-dev \
+    mesa-utils \
+    libvulkan-dev \
+    libxkbcommon-x11-0 \
+    libxkbcommon-dev \
+    software-properties-common \
+    libgl1-mesa-dev \
+    libxcb-xinerama0 \
+    libxcb-xinput0 \
+    libxcb-icccm4 \
+    libxcb-image0 \
+    libxcb-keysyms1 \
+    libxcb-randr0 \
+    libxcb-render-util0 \
+    libxcb-shape0 \
+    libxcb-sync1 \
+    libxcb-xfixes0 \
+    libxcb-xkb1 \
+    libxcb-cursor0 \
+    locales \
+    && apt-get update \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set locale to UTF-8
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
+# Set the jwt token as environment variables for the Qt installer
+ARG QT_INSTALLER_JWT_TOKEN
+ENV QT_INSTALLER_JWT_TOKEN=$QT_INSTALLER_JWT_TOKEN
+
+# Download the Qt Online Installer
+RUN curl -L -o qt-installer.run "https://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run" && \
+    chmod +x qt-installer.run
+
+RUN ./qt-installer.run \
+    --root /opt/Qt \
+    --accept-licenses \
+    --default-answer \
+    --accept-obligations \
+    --confirm-command \
+    install qt.qt6.680.wasm_multithread qt.qt6.680.wasm_singlethread
+
+# Set environment variables for WebAssembly
+ENV EMSDK_VERSION=3.1.56
+ENV EMSDK_PATH=/opt/emsdk
+
+# Install emsdk
+RUN git clone https://github.com/emscripten-core/emsdk.git $EMSDK_PATH && \
+    cd $EMSDK_PATH && \
+    ./emsdk install $EMSDK_VERSION && \
+    ./emsdk activate $EMSDK_VERSION
+
+# Activate EMSDK for the current session
+RUN /bin/bash -c "source ${EMSDK_PATH}/emsdk_env.sh"
+
+# Set up the environment variables permanently in the shell
+RUN echo "source ${EMSDK_PATH}/emsdk_env.sh" >> ~/.bash_profile
+
+# Set up environment variables
+ENV QT_PATH=/opt/Qt
+ENV QT_BASE_DIR=/opt/Qt/6.8.0/wasm_multithread
+ENV LD_LIBRARY_PATH=$QT_BASE_DIR/lib
+ENV QML2_IMPORT_PATH=$QT_BASE_DIR/qml
+ENV QT_PLUGIN_PATH=$QT_BASE_DIR/plugins
+ENV CMAKE_C_COMPILER=/opt/emsdk/upstream/emscripten/emcc
+ENV CMAKE_CXX_COMPILER=/opt/emsdk/upstream/emscripten/em++
+ENV CMAKE_TOOLCHAIN_FILE=$QT_BASE_DIR/lib/cmake/Qt6/qt.toolchain.cmake
+ENV PATH=$PATH:$QT_BASE_DIR/bin:$QT_PATH/Tools/CMake/bin:$QT_PATH/Tools/Ninja
+ENV EMSDK=/opt/emsdk
+ENV PATH=$PATH:$EMSDK:$EMSDK/upstream/emscripten:$EMSDK/node/20.18.0_64bit/bin
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -10,60 +94,23 @@ WORKDIR /app
 # Copy the project files into the container
 COPY . /app
 
-# Set an environment variable to indicate the build type
-ENV BUILD_TYPE=wasm
+# Set the deployment location as an environment variable
+ARG DEPLOYMENT_LOCATION
+ENV DEPLOYMENT_LOCATION=$DEPLOYMENT_LOCATION
 
-# Create the build directory, configure the project with CMake, and build it using Ninja
-RUN mkdir build && cd build && qt-cmake .. -G Ninja -DBUILD_TYPE=${BUILD_TYPE} -B . && cmake --build .
-
-## Stage 2: Serve the built files
-# Use the official Python base image
-FROM python:3.9-slim
-
-# Set environment variables
-ENV EMSDK_VERSION=3.1.37
-ENV EMSDK_PATH=/opt/emsdk
-ENV PATH="${EMSDK_PATH}/upstream/emscripten:${EMSDK_PATH}/upstream/bin:${EMSDK_PATH}/node/bin:${EMSDK_PATH}/python/3.9.2_64bit/bin:$PATH"
-
-# Install dependencies required for emsdk
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    build-essential \
-    cmake \
-    && rm -rf /var/lib/apt/lists/*
-
-# Clone the Emscripten SDK repo
-RUN git clone https://github.com/emscripten-core/emsdk.git $EMSDK_PATH
-
-# Install and activate the specified version of the Emscripten SDK
-RUN cd $EMSDK_PATH \
-    && git fetch \
-    && ./emsdk install ${EMSDK_VERSION} \
-    && ./emsdk activate ${EMSDK_VERSION}
-
-# Set up the environment variables permanently in the shell
-RUN echo "source ${EMSDK_PATH}/emsdk_env.sh" >> ~/.bashrc
-
-# Activate EMSDK for the current session
-RUN /bin/bash -c "source ${EMSDK_PATH}/emsdk_env.sh"
-
-# Set the working directory inside the container
-WORKDIR /app
-
-# Copy the built files from the builder stage
-# apptq_frontend.html, apptq_frontend.js, apptq_frontend.wasm, apptq_frontend.worker.js, qtloader.js, qtlogo.svg
-COPY --from=builder /app/build/*.html /app
-COPY --from=builder /app/build/*.js /app
-COPY --from=builder /app/build/*.wasm /app
-COPY --from=builder /app/build/*.svg /app
+# Create the build directory, configure the project with CMake, and build it
+RUN mkdir build \
+    && mkdir deploy \
+    && cd build \
+    && cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_BUILD=wasm -DDEPLOYMENT_LOCATION=${DEPLOYMENT_LOCATION} .. \
+    && cmake --build . \
+    && cp apptq_frontend.html apptq_frontend.js apptq_frontend.wasm apptq_frontend.worker.js qtloader.js *.svg /app/deploy
 
 # Replace the default Qt logo with your custom logo
-COPY tq-logo.svg /app/qtlogo.svg
+COPY tq-logo.svg /app/deploy/qtlogo.svg
 
 # Expose port 3000 to allow external access
 EXPOSE 3000
 
 # Command to run a simple HTTP server on port 3000
-CMD ["sh", "-c", "python3 /opt/emsdk/upstream/emscripten/emrun.py --no_browser --port 3000 ."]
-
+CMD ["sh", "-c", "cd /app/deploy && python3 /opt/emsdk/upstream/emscripten/emrun.py --no_browser --port 3000 ."]

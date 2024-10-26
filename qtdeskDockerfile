@@ -1,15 +1,15 @@
-# Use Ubuntu as the base image
-FROM ubuntu:22.04
+# Use the official Ubuntu 24.04 image as the base image
+FROM ubuntu:24.04
 
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update and install necessary packages
+# Install necessary dependencies
 RUN apt-get update && apt-get install -y \
     sudo \
     build-essential \
-    cmake \
     git \
+    curl \
     wget \
     python3 \
     python3-pip \
@@ -19,10 +19,7 @@ RUN apt-get update && apt-get install -y \
     libxkbcommon-x11-0 \
     libxkbcommon-dev \
     software-properties-common \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update && apt-get install -y \
+    libgl1-mesa-dev \
     libxcb-xinerama0 \
     libxcb-xinput0 \
     libxcb-icccm4 \
@@ -34,39 +31,42 @@ RUN apt-get update && apt-get install -y \
     libxcb-sync1 \
     libxcb-xfixes0 \
     libxcb-xkb1 \
+    libxcb-cursor0 \
+    locales \
+    && apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && add-apt-repository ppa:oibaf/graphics-drivers \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Set locale to UTF-8
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
-RUN apt-get update && apt-get install -y \
-    qt6-base-dev \
-    qt6-declarative-dev \
-    qt6-tools-dev \
-    qt6-tools-dev-tools \
-    qt6-wayland-dev \
-    qml6-module-qtqml \
-    qml6-module-qtqml-workerscript \
-    qml6-module-qtquick \
-    qml6-module-qtquick-window \
-    qml6-module-qtquick-controls \
-    qml6-module-qtquick-layouts \
-    qml6-module-qtquick-templates \
-    qml6-module-qt-labs-platform \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Set the jwt token as environment variables for the Qt installer
+ARG QT_INSTALLER_JWT_TOKEN
+ENV QT_INSTALLER_JWT_TOKEN=$QT_INSTALLER_JWT_TOKEN
 
-RUN apt-get update && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Download the Qt Online Installer
+RUN curl -L -o qt-installer.run "https://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run" && \
+    chmod +x qt-installer.run
+
+# Run the Qt installer in non-interactive mode
+RUN ./qt-installer.run \
+    --root /opt/Qt \
+    --accept-licenses \
+    --default-answer \
+    --accept-obligations \
+    --confirm-command \
+    install qt.qt6.680.linux_gcc_64
 
 # Set up environment variables
-ENV QT_BASE_DIR=/usr/lib/qt6
-ENV PATH=$QT_BASE_DIR/bin:$PATH
+ENV QT_PATH=/opt/Qt
+ENV QT_BASE_DIR=/opt/Qt/6.8.0/gcc_64
 ENV LD_LIBRARY_PATH=$QT_BASE_DIR/lib
 ENV QML2_IMPORT_PATH=$QT_BASE_DIR/qml
 ENV QT_PLUGIN_PATH=$QT_BASE_DIR/plugins
+ENV PATH=$PATH:$QT_BASE_DIR/bin:$QT_PATH/Tools/CMake/bin:$QT_PATH/Tools/Ninja
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -74,8 +74,8 @@ WORKDIR /app
 # Copy the project files into the container
 COPY . /app
 
-# Create the build directory, configure the project with CMake, and build it
-RUN rm -rf build && mkdir build && cd build && cmake .. && make
+# Create the build directory, configure the project with CMake, and build it using Ninja
+RUN mkdir build && cd build && cmake .. && cmake --build .
 
-#CMD ["/bin/bash"]
+# Run the application
 CMD ["./build/apptq_frontend"]

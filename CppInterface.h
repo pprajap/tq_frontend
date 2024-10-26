@@ -22,7 +22,7 @@ signals:
     void downloadCompleted(const QByteArray &data);
 
 private:
-    bool bIsOnline = true;
+    bool bIsOnline = false;
 };
 
 #endif // CPPINTERFACE_H
