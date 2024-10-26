@@ -77,7 +77,7 @@ RUN echo "source ${EMSDK_PATH}/emsdk_env.sh" >> ~/.bash_profile
 
 # Set up environment variables
 ENV QT_PATH=/opt/Qt
-ENV QT_BASE_DIR=/opt/Qt/6.8.0/wasm_multithread
+ENV QT_BASE_DIR=/opt/Qt/6.8.0/wasm_singlethread
 ENV LD_LIBRARY_PATH=$QT_BASE_DIR/lib
 ENV QML2_IMPORT_PATH=$QT_BASE_DIR/qml
 ENV QT_PLUGIN_PATH=$QT_BASE_DIR/plugins
