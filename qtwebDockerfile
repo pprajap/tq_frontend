@@ -102,7 +102,7 @@ ENV DEPLOYMENT_LOCATION=$DEPLOYMENT_LOCATION
 RUN mkdir build \
     && mkdir deploy \
     && cd build \
-    && cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_BUILD=wasm -DDEPLOYMENT_LOCATION=${DEPLOYMENT_LOCATION} .. \
+    && cmake -DTARGET_BUILD=wasm -DDEPLOYMENT_LOCATION=${DEPLOYMENT_LOCATION} .. \
     && cmake --build . \
     && cp apptq_frontend.html apptq_frontend.js apptq_frontend.wasm qtloader.js *.svg /app/deploy
 
