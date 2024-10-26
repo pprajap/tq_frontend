@@ -102,7 +102,7 @@ ENV DEPLOYMENT_LOCATION=$DEPLOYMENT_LOCATION
 RUN mkdir build \
     && mkdir deploy \
     && cd build \
-    && cmake -DTARGET_BUILD=wasm -DDEPLOYMENT_LOCATION=${DEPLOYMENT_LOCATION} .. \
+    && cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_BUILD=wasm -DDEPLOYMENT_LOCATION=${DEPLOYMENT_LOCATION} .. \
     && cmake --build . \
     && cp apptq_frontend.html apptq_frontend.js apptq_frontend.wasm qtloader.js *.svg /app/deploy
 
@@ -113,4 +113,4 @@ COPY tq-logo.svg /app/deploy/qtlogo.svg
 EXPOSE 3000
 
 # Command to run a simple HTTP server on port 3000
-CMD ["sh", "-c", "cd /app/deploy && python3 /opt/emsdk/upstream/emscripten/emrun.py --no_browser --port 3000 ."]
+CMD ["sh", "-c", "python3 /opt/emsdk/upstream/emscripten/emrun.py --no_browser --port 3000 /app/deploy/apptq_frontend.html"]
