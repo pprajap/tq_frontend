@@ -1,93 +1,3 @@
-# # Use the official Ubuntu 24.04 image as the base image
-# FROM ubuntu:24.04
-
-# # Avoid prompts from apt
-# ENV DEBIAN_FRONTEND=noninteractive
-
-# # Install necessary dependencies
-# RUN apt-get update && apt-get install -y \
-#     sudo \
-#     build-essential \
-#     git \
-#     curl \
-#     wget \
-#     python3 \
-#     python3-pip \
-#     mesa-common-dev \
-#     mesa-utils \
-#     libvulkan-dev \
-#     libxkbcommon-x11-0 \
-#     libxkbcommon-dev \
-#     software-properties-common \
-#     libgl1-mesa-dev \
-#     libxcb-xinerama0 \
-#     libxcb-xinput0 \
-#     libxcb-icccm4 \
-#     libxcb-image0 \
-#     libxcb-keysyms1 \
-#     libxcb-randr0 \
-#     libxcb-render-util0 \
-#     libxcb-shape0 \
-#     libxcb-sync1 \
-#     libxcb-xfixes0 \
-#     libxcb-xkb1 \
-#     libxcb-cursor0 \
-#     locales \
-#     && apt-get update \
-#     && apt-get clean \
-#     && rm -rf /var/lib/apt/lists/*
-
-# # Set locale to UTF-8
-# RUN locale-gen en_US.UTF-8
-# ENV LANG en_US.UTF-8
-# ENV LANGUAGE en_US:en
-# ENV LC_ALL en_US.UTF-8
-
-# # Set the jwt token as environment variables for the Qt installer
-# ARG QT_INSTALLER_JWT_TOKEN
-# ENV QT_INSTALLER_JWT_TOKEN=$QT_INSTALLER_JWT_TOKEN
-
-# # Download the Qt Online Installer
-# RUN curl -L -o qt-installer.run "https://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run" && \
-#     chmod +x qt-installer.run
-
-# RUN ./qt-installer.run \
-#     --root /opt/Qt \
-#     --accept-licenses \
-#     --default-answer \
-#     --accept-obligations \
-#     --confirm-command \
-#     install qt.qt6.680.wasm_multithread qt.qt6.680.wasm_singlethread
-
-# # Set environment variables for WebAssembly
-# ENV EMSDK_VERSION=3.1.56
-# ENV EMSDK_PATH=/opt/emsdk
-
-# # Install emsdk
-# RUN git clone https://github.com/emscripten-core/emsdk.git $EMSDK_PATH && \
-#     cd $EMSDK_PATH && \
-#     ./emsdk install $EMSDK_VERSION && \
-#     ./emsdk activate $EMSDK_VERSION
-
-# # Activate EMSDK for the current session
-# RUN /bin/bash -c "source ${EMSDK_PATH}/emsdk_env.sh"
-
-# # Set up the environment variables permanently in the shell
-# RUN echo "source ${EMSDK_PATH}/emsdk_env.sh" >> ~/.bash_profile
-
-# # Set up environment variables
-# ENV QT_PATH=/opt/Qt
-# ENV QT_BASE_DIR=/opt/Qt/6.8.0/wasm_singlethread
-# ENV LD_LIBRARY_PATH=$QT_BASE_DIR/lib
-# ENV QML2_IMPORT_PATH=$QT_BASE_DIR/qml
-# ENV QT_PLUGIN_PATH=$QT_BASE_DIR/plugins
-# ENV CMAKE_C_COMPILER=/opt/emsdk/upstream/emscripten/emcc
-# ENV CMAKE_CXX_COMPILER=/opt/emsdk/upstream/emscripten/em++
-# ENV CMAKE_TOOLCHAIN_FILE=$QT_BASE_DIR/lib/cmake/Qt6/qt.toolchain.cmake
-# ENV PATH=$PATH:$QT_BASE_DIR/bin:$QT_PATH/Tools/CMake/bin:$QT_PATH/Tools/Ninja
-# ENV EMSDK=/opt/emsdk
-# ENV PATH=$PATH:$EMSDK:$EMSDK/upstream/emscripten:$EMSDK/node/20.18.0_64bit/bin
-
 # base image
 FROM pprajapa/qt680-wasm-singlethread-emsdk:latest
 
@@ -105,7 +15,7 @@ ENV DEPLOYMENT_LOCATION=$DEPLOYMENT_LOCATION
 RUN mkdir build \
     && mkdir deploy \
     && cd build \
-    && cmake -DCMAKE_BUILD_TYPE=Release -DTARGET_BUILD=wasm -DDEPLOYMENT_LOCATION=${DEPLOYMENT_LOCATION} .. \
+    && cmake -DTARGET_BUILD=wasm -DDEPLOYMENT_LOCATION=${DEPLOYMENT_LOCATION} .. \
     && cmake --build . \
     && cp apptq_frontend.html apptq_frontend.js apptq_frontend.wasm qtloader.js *.svg /app/deploy
 
